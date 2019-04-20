@@ -7,8 +7,15 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"sort"
+	"strconv"
 	"strings"
 )
+
+var keywordTypeIdentifierMapping = map[string]string{
+	"OIDs":    "OIDS_ATTR_KEYWORD",
+	"RuleIDS": "OIDS_ATTR_KEYWORD",
+}
 
 const mappingTrap = "\\s*\"([A-Z]+)\"[`\\s\\\\s+]+\\*\\*([A-Za-z]+)\\*\\*\\s*"
 
@@ -71,7 +78,28 @@ func fetchKeywordTypeMapping(filePath string) (result map[string]string, err err
 	return result, err
 }
 
-func generateKeywordTypeMap(filePath string) (err error) {
+func generateKeywordTypeMap(filePath string, keywordTypeMap map[string]string) (err error) {
+	fp, err := os.Create(filePath)
+	if nil != err {
+		return
+	}
+	defer fp.Close()
+	fp.WriteString("package ldapschemaparser\n\n")
+	fp.WriteString("var keywordTypeLookupMap = map[string]int{\n")
+	resultCode := make([]string, 0, 0)
+	for keywordText, typeText := range keywordTypeMap {
+		if typeIdentifier, ok := keywordTypeIdentifierMapping[typeText]; ok {
+			aux := strconv.Quote(keywordText) + ": " + typeIdentifier
+			resultCode = append(resultCode, aux)
+		} else {
+			log.Printf("WARN: cannot map typeText to typeIdentifier: %v for %v", typeText, keywordText)
+		}
+	}
+	sort.Strings(resultCode)
+	for _, codeLine := range resultCode {
+		fp.WriteString("\t" + codeLine + ",\n")
+	}
+	fp.WriteString("}\n")
 	return nil
 }
 
@@ -87,7 +115,7 @@ func main() {
 		return
 	}
 	log.Printf("fetched keyword type map: %v", keywordTypeMap)
-	if err = generateKeywordTypeMap(outputFilePath); nil != err {
+	if err = generateKeywordTypeMap(outputFilePath, keywordTypeMap); nil != err {
 		log.Fatalf("failed on generating keyword type map: %v", err)
 	}
 }
