@@ -10,15 +10,15 @@ package ldapschemaparser
 
 %token '(' ')' '{' '}'
 %token SPACES
-%token NUMBER
 
+%token <text> NUMBER
 %token <text> NUMERIC_OID
-%token <text> KEYWORD X_KEYWORD OIDS_ATTR_KEYWORD
+%token <text> KEYWORD X_KEYWORD NOIDS_ATTR_KEYWORD
 %token <text> SQSTRING DQSTRING
 
 // %type <text> quotedString
 %type <genericSchema> schema attributeDefinitions attributeDefinition
-%type <parameterizedKeyword> oids dollarOIDs
+%type <parameterizedKeyword> noids dollarOIDs numberIDS
 %type <text> oid
 
 %start schema
@@ -49,10 +49,24 @@ dollarOIDs: oid {
   $$.addParameter($5)
 }
 
-oids: oid {
+numberIDS: NUMBER {
+  $$ = newParameterizedKeywordWithParameter($1, NumberIDsRule)
+}
+| numberIDS SPACES NUMBER {
+  $$ = $1
+  $$.addParameter($3)
+}
+
+noids: oid {
   $$ = newParameterizedKeywordWithParameter($1, OIDsRule)
 }
 | '(' optionalSpace dollarOIDs optionalSpace ')' {
+  $$ = $3
+}
+| NUMBER {
+  $$ = newParameterizedKeywordWithParameter($1, NumberIDsRule)
+}
+| '(' optionalSpace numberIDS optionalSpace ')' {
   $$ = $3
 }
 
@@ -69,7 +83,7 @@ attributeDefinition: KEYWORD {
   $$ = newGenericSchema()
   $$.addFlagKeywords($1)
 }
-| OIDS_ATTR_KEYWORD optionalSpace oids {
+| NOIDS_ATTR_KEYWORD optionalSpace noids {
   $$ = newGenericSchema()
   $$.addParameterizedKeyword($1, $3)
 }
