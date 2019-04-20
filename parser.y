@@ -3,6 +3,7 @@ package ldapschemaparser
 %}
 
 %union{
+  genericSchema *GenericSchema
   text string
 }
 
@@ -12,11 +13,18 @@ package ldapschemaparser
 
 %token <text> NUMERIC_OID KEYWORD SQSTRING DQSTRING
 
+%type <genericSchema> schema
+
 %start schema
 
 %%
 
-schema: '(' optionalSpace NUMERIC_OID optionalSpace ')'
+schema: '(' optionalSpace NUMERIC_OID optionalSpace ')' {
+  $$ = &GenericSchema {
+    NumericOID: $3,
+  }
+  yylex.(*schemaLexer).result = $$
+}
 
 optionalSpace:
 |	SPACES

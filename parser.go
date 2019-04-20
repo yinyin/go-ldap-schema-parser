@@ -9,8 +9,9 @@ import __yyfmt__ "fmt"
 
 //line parser.y:5
 type yySymType struct {
-	yys  int
-	text string
+	yys           int
+	genericSchema *GenericSchema
+	text          string
 }
 
 const SPACES = 57346
@@ -41,7 +42,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:24
+//line parser.y:32
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -443,6 +444,15 @@ yydefault:
 	// dummy call; replaced with literal code
 	switch yynt {
 
+	case 1:
+		yyDollar = yyS[yypt-5 : yypt+1]
+//line parser.y:22
+		{
+			yyVAL.genericSchema = &GenericSchema{
+				NumericOID: yyDollar[3].text,
+			}
+			yylex.(*schemaLexer).result = yyVAL.genericSchema
+		}
 	}
 	goto yystack /* stack new state and value */
 }

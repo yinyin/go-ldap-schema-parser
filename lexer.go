@@ -9,17 +9,28 @@ import (
 
 const dataEOF = 0
 
-type ldapSchemaLexer struct {
+type schemaLexer struct {
 	dataContent  []rune
 	dataLength   int
 	currentIndex int
+
+	result *GenericSchema
 }
 
-func (lexer *ldapSchemaLexer) Lex(lval *yySymType) (lexIdentifier int) {
+func newSchemaLexer(schemaText string) *schemaLexer {
+	d := []rune(schemaText)
+	return &schemaLexer{
+		dataContent: d,
+		dataLength:  len(d),
+	}
+}
+
+func (lexer *schemaLexer) Lex(lval *yySymType) (lexIdentifier int) {
 	var result []rune
 	startIndex := lexer.currentIndex
 	for {
 		ch := lexer.next()
+		log.Printf("DEBUG: %v", ch)
 		if ch == dataEOF {
 			break
 		}
@@ -65,44 +76,15 @@ func (lexer *ldapSchemaLexer) Lex(lval *yySymType) (lexIdentifier int) {
 				return
 			}
 		case SQSTRING:
-			if ch == '\u005C' {
-				v := lexer.peekString(2)
-				if (v == "5c") || (v == "5C") {
-					result = append(result, '\\')
-					lexer.currentIndex += 2
-				} else if v == "27" {
-					result = append(result, '\'')
-					lexer.currentIndex += 2
-				}
-			} else if ch == '\'' {
-				lval.text = string(result)
-			} else {
-				result = append(result, ch)
-			}
+			result = lexer.stateTransitQuotedString(lval, result, '\'', ch)
 		case DQSTRING:
-			if ch == '\u005C' {
-				v := lexer.peekString(2)
-				if (v == "5c") || (v == "5C") {
-					result = append(result, '\\')
-					lexer.currentIndex += 2
-				} else if v == "27" {
-					result = append(result, '\'')
-					lexer.currentIndex += 2
-				} else if v == "22" {
-					result = append(result, '"')
-					lexer.currentIndex += 2
-				}
-			} else if ch == '"' {
-				lval.text = string(result)
-			} else {
-				result = append(result, ch)
-			}
+			result = lexer.stateTransitQuotedString(lval, result, '"', ch)
 		}
 	}
 	return 0
 }
 
-func (lexer *ldapSchemaLexer) next() rune {
+func (lexer *schemaLexer) next() rune {
 	if lexer.currentIndex >= lexer.dataLength {
 		return dataEOF
 	}
@@ -111,7 +93,7 @@ func (lexer *ldapSchemaLexer) next() rune {
 	return ch
 }
 
-func (lexer *ldapSchemaLexer) peekString(len int) string {
+func (lexer *schemaLexer) peekString(len int) string {
 	if (lexer.currentIndex + len) > lexer.dataLength {
 		return ""
 	}
@@ -120,18 +102,46 @@ func (lexer *ldapSchemaLexer) peekString(len int) string {
 	return string(v)
 }
 
-func (lexer *ldapSchemaLexer) putBack() {
+func (lexer *schemaLexer) putBack() {
 	if lexer.currentIndex > 0 {
 		lexer.currentIndex--
 	}
 }
 
-func (lexer *ldapSchemaLexer) fetchText(lval *yySymType, startIndex int) string {
+func (lexer *schemaLexer) fetchText(lval *yySymType, startIndex int) string {
 	v := string(lexer.dataContent[startIndex:lexer.currentIndex])
 	lval.text = v
 	return v
 }
 
-func (lexer *ldapSchemaLexer) Error(e string) {
+func (lexer *schemaLexer) stateTransitQuotedString(lval *yySymType, result []rune, quoteChar, inputChar rune) []rune {
+	if inputChar == '\u005C' {
+		result = lexer.escapedQuotedCharacter(result)
+	} else if inputChar == quoteChar {
+		lval.text = string(result)
+	} else {
+		result = append(result, inputChar)
+	}
+	return result
+}
+
+func (lexer *schemaLexer) escapedQuotedCharacter(result []rune) []rune {
+	var escapedCh rune
+	v := lexer.peekString(2)
+	if (v == "5c") || (v == "5C") {
+		escapedCh = '\\'
+	} else if v == "27" {
+		escapedCh = '\''
+	} else if v == "22" {
+		escapedCh = '"'
+	}
+	if escapedCh != 0 {
+		result = append(result, escapedCh)
+		lexer.currentIndex += 2
+	}
+	return result
+}
+
+func (lexer *schemaLexer) Error(e string) {
 	log.Printf("parse error: %s", e)
 }
