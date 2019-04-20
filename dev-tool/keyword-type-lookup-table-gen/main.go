@@ -13,8 +13,8 @@ import (
 )
 
 var keywordTypeIdentifierMapping = map[string]string{
-	"OIDs":    "OIDS_ATTR_KEYWORD",
-	"RuleIDS": "OIDS_ATTR_KEYWORD",
+	"OIDs":    "NOIDS_ATTR_KEYWORD",
+	"RuleIDS": "NOIDS_ATTR_KEYWORD",
 }
 
 const mappingTrap = "\\s*\"([A-Z]+)\"[`\\s\\\\s+]+\\*\\*([A-Za-z]+)\\*\\*\\s*"
