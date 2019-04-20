@@ -4,10 +4,37 @@ package ldapschemaparser
 
 import (
 	"log"
+	"strings"
 	"unicode"
 )
 
 const dataEOF = 0
+
+var keywordTypeLookupMap = map[string]int{
+	"SUP":  OIDS_ATTR_KEYWORD,
+	"MUST": OIDS_ATTR_KEYWORD,
+	"MAY":  OIDS_ATTR_KEYWORD,
+}
+
+func lookupKeywordType(keywordText string) (string, int) {
+	u := strings.ToUpper(keywordText)
+	keywordIdentifier, ok := keywordTypeLookupMap[u]
+	if ok {
+		return u, keywordIdentifier
+	}
+	return keywordText, KEYWORD
+}
+
+func isExtensionKeyword(keywordText string) bool {
+	if len(keywordText) < 2 {
+		return false
+	}
+	prefixCh := keywordText[0:2]
+	if (prefixCh == "X-") || (prefixCh == "x-") {
+		return true
+	}
+	return false
+}
 
 type schemaLexer struct {
 	dataContent  []rune
@@ -73,6 +100,12 @@ func (lexer *schemaLexer) Lex(lval *yySymType) (lexIdentifier int) {
 			if !unicode.IsLetter(ch) && !unicode.IsDigit(ch) && (ch != '-') {
 				lexer.putBack()
 				// TODO: check if special keyword (eg. NAME, AUX, SUP ...)
+				w := lexer.fetchText(lval, startIndex)
+				if isExtensionKeyword(w) {
+					lexIdentifier = X_KEYWORD
+				} else {
+					lval.text, lexIdentifier = lookupKeywordType(w)
+				}
 				return
 			}
 		case SQSTRING:

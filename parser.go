@@ -11,6 +11,7 @@ import __yyfmt__ "fmt"
 type yySymType struct {
 	yys           int
 	genericSchema *GenericSchema
+	attrWithOIDs  *AttributeWithOIDs
 	text          string
 }
 
@@ -18,8 +19,10 @@ const SPACES = 57346
 const NUMBER = 57347
 const NUMERIC_OID = 57348
 const KEYWORD = 57349
-const SQSTRING = 57350
-const DQSTRING = 57351
+const X_KEYWORD = 57350
+const OIDS_ATTR_KEYWORD = 57351
+const SQSTRING = 57352
+const DQSTRING = 57353
 
 var yyToknames = [...]string{
 	"$end",
@@ -33,8 +36,11 @@ var yyToknames = [...]string{
 	"NUMBER",
 	"NUMERIC_OID",
 	"KEYWORD",
+	"X_KEYWORD",
+	"OIDS_ATTR_KEYWORD",
 	"SQSTRING",
 	"DQSTRING",
+	"'$'",
 }
 var yyStatenames = [...]string{}
 
@@ -42,7 +48,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:32
+//line parser.y:85
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -53,42 +59,53 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 9
+const yyLast = 31
 
 var yyAct = [...]int{
 
-	5, 4, 3, 7, 2, 1, 0, 0, 6,
+	3, 26, 17, 9, 8, 10, 4, 18, 11, 19,
+	20, 13, 25, 19, 20, 5, 12, 15, 6, 21,
+	14, 2, 22, 24, 23, 16, 27, 7, 1, 0,
+	28,
 }
 var yyPact = [...]int{
 
-	0, -1000, -7, -10, -1000, -7, -2, -1000,
+	17, -1000, -2, 5, -1000, 10, -8, 8, -1000, -1000,
+	-2, 15, -8, 3, -1000, -1000, -1000, -1000, -2, -1000,
+	-1000, -1, -2, -1000, -4, -2, -1000, -1, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 5, 2,
+	0, 28, 27, 4, 25, 22, 2, 0,
 }
 var yyR1 = [...]int{
 
-	0, 1, 2, 2,
+	0, 1, 7, 7, 6, 6, 5, 5, 4, 4,
+	3, 3, 2, 2,
 }
 var yyR2 = [...]int{
 
-	0, 5, 0, 1,
+	0, 7, 0, 1, 1, 1, 1, 5, 1, 5,
+	1, 3, 1, 3,
 }
 var yyChk = [...]int{
 
-	-1000, -1, 4, -2, 8, 10, -2, 5,
+	-1000, -1, 4, -7, 8, 10, 8, -2, -3, 11,
+	13, -7, 8, -7, 5, -3, -4, -6, 4, 10,
+	11, -7, -5, -6, -7, 16, 5, -7, -6,
 }
 var yyDef = [...]int{
 
-	0, -2, 2, 0, 3, 2, 0, 1,
+	0, -2, 2, 0, 3, 0, 0, 2, 12, 10,
+	2, 0, 3, 0, 1, 13, 11, 8, 2, 4,
+	5, 0, 2, 6, 0, 2, 9, 0, 7,
 }
 var yyTok1 = [...]int{
 
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 16, 3, 3, 3,
 	4, 5, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -101,7 +118,7 @@ var yyTok1 = [...]int{
 }
 var yyTok2 = [...]int{
 
-	2, 3, 8, 9, 10, 11, 12, 13,
+	2, 3, 8, 9, 10, 11, 12, 13, 14, 15,
 }
 var yyTok3 = [...]int{
 	0,
@@ -445,13 +462,76 @@ yydefault:
 	switch yynt {
 
 	case 1:
-		yyDollar = yyS[yypt-5 : yypt+1]
-//line parser.y:22
+		yyDollar = yyS[yypt-7 : yypt+1]
+//line parser.y:28
 		{
-			yyVAL.genericSchema = &GenericSchema{
-				NumericOID: yyDollar[3].text,
-			}
+			yyVAL.genericSchema = yyDollar[5].genericSchema
+			yyVAL.genericSchema.NumericOID = yyDollar[3].text
 			yylex.(*schemaLexer).result = yyVAL.genericSchema
+		}
+	case 4:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:37
+		{
+			yyVAL.text = yyDollar[1].text
+		}
+	case 5:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:40
+		{
+			yyVAL.text = yyDollar[1].text
+		}
+	case 6:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:44
+		{
+			yyVAL.attrWithOIDs = newAttributeWithOIDsWithOID(yyDollar[1].text)
+		}
+	case 7:
+		yyDollar = yyS[yypt-5 : yypt+1]
+//line parser.y:47
+		{
+			yyVAL.attrWithOIDs = yyDollar[1].attrWithOIDs
+			yyVAL.attrWithOIDs.addOID(yyDollar[5].text)
+		}
+	case 8:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:52
+		{
+			yyVAL.attrWithOIDs = newAttributeWithOIDsWithOID(yyDollar[1].text)
+		}
+	case 9:
+		yyDollar = yyS[yypt-5 : yypt+1]
+//line parser.y:55
+		{
+			yyVAL.attrWithOIDs = yyDollar[3].attrWithOIDs
+		}
+	case 10:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:68
+		{
+			yyVAL.genericSchema = newGenericSchema()
+			yyVAL.genericSchema.addFlagKeywords(yyDollar[1].text)
+		}
+	case 11:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser.y:72
+		{
+			yyVAL.genericSchema = newGenericSchema()
+			yyVAL.genericSchema.addAttributeWithOIDs(yyDollar[1].text, yyDollar[3].attrWithOIDs)
+		}
+	case 12:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:77
+		{
+			yyVAL.genericSchema = yyDollar[1].genericSchema
+		}
+	case 13:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser.y:80
+		{
+			yyDollar[1].genericSchema.add(yyDollar[3].genericSchema)
+			yyVAL.genericSchema = yyDollar[1].genericSchema
 		}
 	}
 	goto yystack /* stack new state and value */
