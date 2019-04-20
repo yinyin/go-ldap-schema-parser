@@ -38,4 +38,4 @@ Icon
 .glide/
 
 y.output
-ldap-schema-parser
+/ldap-schema-parser
