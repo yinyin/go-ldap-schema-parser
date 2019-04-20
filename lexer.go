@@ -52,7 +52,6 @@ func (lexer *schemaLexer) Lex(lval *yySymType) (lexIdentifier int) {
 	startIndex := lexer.currentIndex
 	for {
 		ch := lexer.next()
-		log.Printf("DEBUG: %v", ch)
 		if ch == dataEOF {
 			break
 		}
