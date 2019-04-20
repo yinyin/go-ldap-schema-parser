@@ -9,10 +9,10 @@ import __yyfmt__ "fmt"
 
 //line parser.y:5
 type yySymType struct {
-	yys           int
-	genericSchema *GenericSchema
-	attrWithOIDs  *AttributeWithOIDs
-	text          string
+	yys                  int
+	genericSchema        *GenericSchema
+	parameterizedKeyword *ParameterizedKeyword
+	text                 string
 }
 
 const SPACES = 57346
@@ -485,26 +485,26 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:44
 		{
-			yyVAL.attrWithOIDs = newAttributeWithOIDsWithOID(yyDollar[1].text)
+			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, OIDsRule)
 		}
 	case 7:
 		yyDollar = yyS[yypt-5 : yypt+1]
 //line parser.y:47
 		{
-			yyVAL.attrWithOIDs = yyDollar[1].attrWithOIDs
-			yyVAL.attrWithOIDs.addOID(yyDollar[5].text)
+			yyVAL.parameterizedKeyword = yyDollar[1].parameterizedKeyword
+			yyVAL.parameterizedKeyword.addParameter(yyDollar[5].text)
 		}
 	case 8:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser.y:52
 		{
-			yyVAL.attrWithOIDs = newAttributeWithOIDsWithOID(yyDollar[1].text)
+			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, OIDsRule)
 		}
 	case 9:
 		yyDollar = yyS[yypt-5 : yypt+1]
 //line parser.y:55
 		{
-			yyVAL.attrWithOIDs = yyDollar[3].attrWithOIDs
+			yyVAL.parameterizedKeyword = yyDollar[3].parameterizedKeyword
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
@@ -518,7 +518,7 @@ yydefault:
 //line parser.y:72
 		{
 			yyVAL.genericSchema = newGenericSchema()
-			yyVAL.genericSchema.addAttributeWithOIDs(yyDollar[1].text, yyDollar[3].attrWithOIDs)
+			yyVAL.genericSchema.addParameterizedKeyword(yyDollar[1].text, yyDollar[3].parameterizedKeyword)
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]

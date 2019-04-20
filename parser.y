@@ -4,7 +4,7 @@ package ldapschemaparser
 
 %union{
   genericSchema *GenericSchema
-  attrWithOIDs *AttributeWithOIDs
+  parameterizedKeyword *ParameterizedKeyword
   text string
 }
 
@@ -18,7 +18,7 @@ package ldapschemaparser
 
 // %type <text> quotedString
 %type <genericSchema> schema attributeDefinitions attributeDefinition
-%type <attrWithOIDs> oids dollarOIDs
+%type <parameterizedKeyword> oids dollarOIDs
 %type <text> oid
 
 %start schema
@@ -42,15 +42,15 @@ oid: NUMERIC_OID {
 }
 
 dollarOIDs: oid {
-  $$ = newAttributeWithOIDsWithOID($1)
+  $$ = newParameterizedKeywordWithParameter($1, OIDsRule)
 }
 | dollarOIDs optionalSpace '$' optionalSpace oid {
   $$ = $1
-  $$.addOID($5)
+  $$.addParameter($5)
 }
 
 oids: oid {
-  $$ = newAttributeWithOIDsWithOID($1)
+  $$ = newParameterizedKeywordWithParameter($1, OIDsRule)
 }
 | '(' optionalSpace dollarOIDs optionalSpace ')' {
   $$ = $3
@@ -71,7 +71,7 @@ attributeDefinition: KEYWORD {
 }
 | OIDS_ATTR_KEYWORD optionalSpace oids {
   $$ = newGenericSchema()
-  $$.addAttributeWithOIDs($1, $3)
+  $$.addParameterizedKeyword($1, $3)
 }
 
 attributeDefinitions: attributeDefinition {

@@ -2,6 +2,7 @@ package ldapschemaparser
 
 import (
 	"errors"
+	"log"
 )
 
 // ErrParseFailed indicate parser stopped at failed state
@@ -9,6 +10,15 @@ var ErrParseFailed = errors.New("parsing LDAP schema failed with error parsing s
 
 // ErrEmptyResult indicate parser resulted an empty result
 var ErrEmptyResult = errors.New("parsing LDAP schema failed with empty result")
+
+// SourceRuleType represent source parsing rule
+type SourceRuleType int
+
+// constants for source parsing rules
+const (
+	UnknownRule SourceRuleType = iota
+	OIDsRule
+)
 
 func undupAppend(s []string, t string) []string {
 	for _, v := range s {
@@ -20,38 +30,45 @@ func undupAppend(s []string, t string) []string {
 	return s
 }
 
-// AttributeWithOIDs is an attribute definition with OIDs as arguments
-type AttributeWithOIDs struct {
+// ParameterizedKeyword is keyword with parameters attached
+type ParameterizedKeyword struct {
+	SourceRule  SourceRuleType
 	KeywordText string
-	OIDs        []string
+	Parameters  []string
 }
 
-func newAttributeWithOIDsWithOID(oidText string) (attr *AttributeWithOIDs) {
-	attr = &AttributeWithOIDs{}
-	attr.addOID(oidText)
+func newParameterizedKeywordWithParameter(paramText string, sourceRule SourceRuleType) (paramKeyword *ParameterizedKeyword) {
+	paramKeyword = &ParameterizedKeyword{
+		SourceRule: sourceRule,
+	}
+	paramKeyword.addParameter(paramText)
 	return
 }
 
-func (attr *AttributeWithOIDs) addOID(oidText string) {
-	attr.OIDs = undupAppend(attr.OIDs, oidText)
+func (paramKeyword *ParameterizedKeyword) addParameter(paramText string) {
+	paramKeyword.Parameters = undupAppend(paramKeyword.Parameters, paramText)
 }
 
-func (attr *AttributeWithOIDs) add(other *AttributeWithOIDs) {
-	for _, oidText := range other.OIDs {
-		attr.addOID(oidText)
+func (paramKeyword *ParameterizedKeyword) add(other *ParameterizedKeyword) {
+	if (other.SourceRule != paramKeyword.SourceRule) && (other.SourceRule != UnknownRule) && (paramKeyword.SourceRule != UnknownRule) {
+		log.Fatalf("cannot add two ParameterizedKeyword with different source rule together: %#v, %#v", paramKeyword, other)
+		return
+	}
+	for _, param := range other.Parameters {
+		paramKeyword.addParameter(param)
 	}
 }
 
 // GenericSchema is generic schema object
 type GenericSchema struct {
-	NumericOID   string
-	FlagKeywords []string
-	OIDKeywords  map[string]*AttributeWithOIDs
+	NumericOID            string
+	FlagKeywords          []string
+	ParameterizedKeywords map[string]*ParameterizedKeyword
 }
 
 func newGenericSchema() *GenericSchema {
 	return &GenericSchema{
-		OIDKeywords: make(map[string]*AttributeWithOIDs),
+		ParameterizedKeywords: make(map[string]*ParameterizedKeyword),
 	}
 }
 
@@ -59,13 +76,13 @@ func (schema *GenericSchema) addFlagKeywords(keyword string) {
 	schema.FlagKeywords = undupAppend(schema.FlagKeywords, keyword)
 }
 
-func (schema *GenericSchema) addAttributeWithOIDs(keyword string, attr *AttributeWithOIDs) {
-	localAttr, ok := schema.OIDKeywords[keyword]
+func (schema *GenericSchema) addParameterizedKeyword(keyword string, paramKeyword *ParameterizedKeyword) {
+	localParamKeyword, ok := schema.ParameterizedKeywords[keyword]
 	if ok {
-		localAttr.add(attr)
+		localParamKeyword.add(paramKeyword)
 	} else {
-		attr.KeywordText = keyword
-		schema.OIDKeywords[keyword] = attr
+		paramKeyword.KeywordText = keyword
+		schema.ParameterizedKeywords[keyword] = paramKeyword
 	}
 }
 
@@ -73,8 +90,8 @@ func (schema *GenericSchema) add(other *GenericSchema) {
 	for _, kw := range other.FlagKeywords {
 		schema.addFlagKeywords(kw)
 	}
-	for kw, attr := range other.OIDKeywords {
-		schema.addAttributeWithOIDs(kw, attr)
+	for kw, param := range other.ParameterizedKeywords {
+		schema.addParameterizedKeyword(kw, param)
 	}
 }
 
