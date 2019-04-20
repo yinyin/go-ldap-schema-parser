@@ -1,6 +1,7 @@
 package ldapschemaparser
 
 //go:generate goyacc -o parser.go parser.y
+//go:generate ./keyword-type-lookup-table-gen -in SYNTAX.md -out keywordtype.go
 
 import (
 	"log"
@@ -9,12 +10,6 @@ import (
 )
 
 const dataEOF = 0
-
-var keywordTypeLookupMap = map[string]int{
-	"SUP":  OIDS_ATTR_KEYWORD,
-	"MUST": OIDS_ATTR_KEYWORD,
-	"MAY":  OIDS_ATTR_KEYWORD,
-}
 
 func lookupKeywordType(keywordText string) (string, int) {
 	u := strings.ToUpper(keywordText)

@@ -1,0 +1,13 @@
+package ldapschemaparser
+
+var keywordTypeLookupMap = map[string]int{
+	"APPLIES":  OIDS_ATTR_KEYWORD,
+	"AUX":      OIDS_ATTR_KEYWORD,
+	"EQUALITY": OIDS_ATTR_KEYWORD,
+	"MAY":      OIDS_ATTR_KEYWORD,
+	"MUST":     OIDS_ATTR_KEYWORD,
+	"NOT":      OIDS_ATTR_KEYWORD,
+	"ORDERING": OIDS_ATTR_KEYWORD,
+	"SUBSTR":   OIDS_ATTR_KEYWORD,
+	"SUP":      OIDS_ATTR_KEYWORD,
+}
