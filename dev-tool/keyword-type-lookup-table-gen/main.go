@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"strings"
 )
 
 const mappingTrap = "\\s*\"([A-Z]+)\"[`\\s\\\\s+]+\\*\\*([A-Za-z]+)\\*\\*\\s*"
@@ -54,7 +55,10 @@ func fetchKeywordTypeMapping(filePath string) (result map[string]string, err err
 			}
 			result[keywordText] = typeText
 		} else {
-			log.Printf("no-match: [%d] %v", lineNum, line)
+			line = strings.TrimSpace(line)
+			if (line != "") && (line != "`\\s* \")\"`") && (line[0:1] != "#") {
+				log.Printf("no-match: [%d] %v", lineNum, line)
+			}
 		}
 		if nil != err {
 			log.Printf("stop reading file: %v", err)
