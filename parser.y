@@ -122,6 +122,10 @@ attributeDefinition: KEYWORD {
   $$ = newGenericSchema()
   $$.addParameterizedKeyword($1, newParameterizedKeywordWithParameter($3, QuotedStringRule))
 }
+| X_KEYWORD optionalSpace qstrings {
+  $$ = newGenericSchema()
+  $$.addParameterizedKeyword($1, $3)
+}
 
 attributeDefinitions: attributeDefinition {
   $$ = $1
