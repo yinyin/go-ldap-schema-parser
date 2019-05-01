@@ -95,7 +95,10 @@ qstrings: quotedString {
   $$ = $3
 }
 
-oidWithLength: NUMERIC_OID '{' NUMBER '}' {
+oidWithLength: NUMERIC_OID {
+  $$ = $1
+}
+| NUMERIC_OID '{' NUMBER '}' {
   $$ = $1 + "{" + $3 + "}"
 }
 
