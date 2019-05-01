@@ -3,6 +3,7 @@ package ldapschemaparser
 var keywordTypeLookupMap = map[string]int{
 	"APPLIES":  NOIDS_ATTR_KEYWORD,
 	"AUX":      NOIDS_ATTR_KEYWORD,
+	"DESC":     QSTRING_ATTR_KEYWORD,
 	"EQUALITY": NOIDS_ATTR_KEYWORD,
 	"FORM":     NOIDS_ATTR_KEYWORD,
 	"MAY":      NOIDS_ATTR_KEYWORD,
@@ -12,4 +13,5 @@ var keywordTypeLookupMap = map[string]int{
 	"ORDERING": NOIDS_ATTR_KEYWORD,
 	"SUBSTR":   NOIDS_ATTR_KEYWORD,
 	"SUP":      NOIDS_ATTR_KEYWORD,
+	"SYNTAX":   OIDLEN_ATTR_KEYWORD,
 }

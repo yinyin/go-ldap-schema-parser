@@ -103,9 +103,15 @@ func (lexer *schemaLexer) Lex(lval *yySymType) (lexIdentifier int) {
 				return
 			}
 		case SQSTRING:
-			result = lexer.stateTransitQuotedString(lval, result, '\'', ch)
+			var stop bool
+			if result, stop = lexer.stateTransitQuotedString(lval, result, '\'', ch); stop {
+				return
+			}
 		case DQSTRING:
-			result = lexer.stateTransitQuotedString(lval, result, '"', ch)
+			var stop bool
+			if result, stop = lexer.stateTransitQuotedString(lval, result, '"', ch); stop {
+				return
+			}
 		}
 	}
 	return 0
@@ -141,15 +147,17 @@ func (lexer *schemaLexer) fetchText(lval *yySymType, startIndex int) string {
 	return v
 }
 
-func (lexer *schemaLexer) stateTransitQuotedString(lval *yySymType, result []rune, quoteChar, inputChar rune) []rune {
+func (lexer *schemaLexer) stateTransitQuotedString(lval *yySymType, result []rune, quoteChar, inputChar rune) ([]rune, bool) {
+	stop := false
 	if inputChar == '\u005C' {
 		result = lexer.escapedQuotedCharacter(result)
 	} else if inputChar == quoteChar {
 		lval.text = string(result)
+		stop = true
 	} else {
 		result = append(result, inputChar)
 	}
-	return result
+	return result, stop
 }
 
 func (lexer *schemaLexer) escapedQuotedCharacter(result []rune) []rune {

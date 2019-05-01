@@ -13,7 +13,8 @@ package ldapschemaparser
 
 %token <text> NUMBER
 %token <text> NUMERIC_OID
-%token <text> KEYWORD X_KEYWORD NOIDS_ATTR_KEYWORD QSTRINGS_ATTR_KEYWORD
+%token <text> KEYWORD X_KEYWORD NOIDS_ATTR_KEYWORD OIDLEN_ATTR_KEYWORD
+%token <text> QSTRINGS_ATTR_KEYWORD QSTRING_ATTR_KEYWORD
 %token <text> SQSTRING DQSTRING
 
 %type <genericSchema> schema attributeDefinitions attributeDefinition
@@ -21,6 +22,7 @@ package ldapschemaparser
 %type <parameterizedKeyword> qstrings spacedQuotedStrings
 %type <text> oid
 %type <text> quotedString
+%type <text> oidWithLength
 
 %start schema
 
@@ -93,6 +95,10 @@ qstrings: quotedString {
   $$ = $3
 }
 
+oidWithLength: NUMERIC_OID '{' NUMBER '}' {
+  $$ = $1 + "{" + $3 + "}"
+}
+
 attributeDefinition: KEYWORD {
   $$ = newGenericSchema()
   $$.addFlagKeywords($1)
@@ -101,9 +107,17 @@ attributeDefinition: KEYWORD {
   $$ = newGenericSchema()
   $$.addParameterizedKeyword($1, $3)
 }
+| OIDLEN_ATTR_KEYWORD optionalSpace oidWithLength {
+  $$ = newGenericSchema()
+  $$.addParameterizedKeyword($1, newParameterizedKeywordWithParameter($3, OIDWithLengthRule))
+}
 | QSTRINGS_ATTR_KEYWORD optionalSpace qstrings {
   $$ = newGenericSchema()
   $$.addParameterizedKeyword($1, $3)
+}
+| QSTRING_ATTR_KEYWORD optionalSpace quotedString {
+  $$ = newGenericSchema()
+  $$.addParameterizedKeyword($1, newParameterizedKeywordWithParameter($3, QuotedStringRule))
 }
 
 attributeDefinitions: attributeDefinition {
