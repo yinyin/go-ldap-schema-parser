@@ -21,8 +21,9 @@ const NUMERIC_OID = 57348
 const KEYWORD = 57349
 const X_KEYWORD = 57350
 const NOIDS_ATTR_KEYWORD = 57351
-const SQSTRING = 57352
-const DQSTRING = 57353
+const QSTRINGS_ATTR_KEYWORD = 57352
+const SQSTRING = 57353
+const DQSTRING = 57354
 
 var yyToknames = [...]string{
 	"$end",
@@ -38,6 +39,7 @@ var yyToknames = [...]string{
 	"KEYWORD",
 	"X_KEYWORD",
 	"NOIDS_ATTR_KEYWORD",
+	"QSTRINGS_ATTR_KEYWORD",
 	"SQSTRING",
 	"DQSTRING",
 	"'$'",
@@ -48,7 +50,7 @@ const yyEofCode = 1
 const yyErrCode = 2
 const yyInitialStackSize = 16
 
-//line parser.y:99
+//line parser.y:117
 
 //line yacctab:1
 var yyExca = [...]int{
@@ -59,56 +61,64 @@ var yyExca = [...]int{
 
 const yyPrivate = 57344
 
-const yyLast = 39
+const yyLast = 55
 
 var yyAct = [...]int{
 
-	3, 31, 9, 17, 10, 8, 4, 5, 11, 18,
-	32, 13, 30, 33, 19, 20, 21, 28, 15, 22,
-	26, 20, 21, 12, 27, 29, 25, 20, 21, 6,
-	14, 34, 2, 24, 23, 16, 7, 1, 35,
+	3, 19, 43, 25, 26, 27, 28, 9, 12, 10,
+	11, 14, 15, 20, 42, 27, 28, 5, 21, 22,
+	23, 29, 44, 8, 34, 22, 23, 30, 22, 23,
+	4, 33, 37, 39, 36, 40, 41, 17, 38, 13,
+	6, 47, 45, 48, 46, 16, 2, 35, 24, 32,
+	49, 31, 18, 7, 1,
 }
 var yyPact = [...]int{
 
-	28, -1000, -2, -3, -1000, 21, -9, 15, -1000, -1000,
-	-2, 25, -9, 5, -1000, -1000, -1000, -1000, -2, -1000,
-	-1000, -1000, 11, -2, 9, -1000, -1000, -4, 1, 8,
-	-2, -1000, -1000, -1000, 17, -1000,
+	42, -1000, 22, 7, -1000, 32, -4, 31, -1000, -1000,
+	22, 22, 40, -4, 9, 0, -1000, -1000, -1000, -1000,
+	22, -1000, -1000, -1000, -1000, -1000, 22, -1000, -1000, 15,
+	-10, 22, 30, -1000, -1000, 27, -1000, -3, 13, 37,
+	-10, 36, 22, -1000, -1000, -1000, -1000, -1000, 18, -1000,
 }
 var yyPgo = [...]int{
 
-	0, 37, 36, 5, 35, 34, 33, 3, 0,
+	0, 54, 53, 23, 52, 51, 49, 48, 47, 1,
+	3, 0,
 }
 var yyR1 = [...]int{
 
-	0, 1, 8, 8, 7, 7, 5, 5, 6, 6,
-	4, 4, 4, 4, 3, 3, 2, 2,
+	0, 1, 11, 11, 9, 9, 5, 5, 6, 6,
+	4, 4, 4, 4, 10, 10, 8, 8, 7, 7,
+	3, 3, 3, 2, 2,
 }
 var yyR2 = [...]int{
 
 	0, 7, 0, 1, 1, 1, 1, 5, 1, 3,
-	1, 5, 1, 5, 1, 3, 1, 3,
+	1, 5, 1, 5, 1, 1, 1, 3, 1, 5,
+	1, 3, 3, 1, 3,
 }
 var yyChk = [...]int{
 
-	-1000, -1, 4, -8, 8, 10, 8, -2, -3, 11,
-	13, -8, 8, -8, 5, -3, -4, -7, 4, 9,
-	10, 11, -8, -5, -6, -7, 9, -8, 8, -8,
-	16, 5, 9, 5, -8, -7,
+	-1000, -1, 4, -11, 8, 10, 8, -2, -3, 11,
+	13, 14, -11, 8, -11, -11, 5, -3, -4, -9,
+	4, 9, 10, 11, -7, -10, 4, 15, 16, -11,
+	-11, -5, -6, -9, 9, -8, -10, -11, 8, -11,
+	8, -11, 17, 5, 9, 5, -10, 5, -11, -9,
 }
 var yyDef = [...]int{
 
-	0, -2, 2, 0, 3, 0, 0, 2, 16, 14,
-	2, 0, 3, 0, 1, 17, 15, 10, 2, 12,
-	4, 5, 0, 2, 2, 6, 8, 0, 3, 0,
-	2, 11, 9, 13, 0, 7,
+	0, -2, 2, 0, 3, 0, 0, 2, 23, 20,
+	2, 2, 0, 3, 0, 0, 1, 24, 21, 10,
+	2, 12, 4, 5, 22, 18, 2, 14, 15, 0,
+	0, 2, 2, 6, 8, 2, 16, 0, 3, 0,
+	3, 0, 2, 11, 9, 13, 17, 19, 0, 7,
 }
 var yyTok1 = [...]int{
 
 	1, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 3, 3, 3, 3, 3, 16, 3, 3, 3,
+	3, 3, 3, 3, 3, 3, 17, 3, 3, 3,
 	4, 5, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
@@ -122,6 +132,7 @@ var yyTok1 = [...]int{
 var yyTok2 = [...]int{
 
 	2, 3, 8, 9, 10, 11, 12, 13, 14, 15,
+	16,
 }
 var yyTok3 = [...]int{
 	0,
@@ -466,7 +477,7 @@ yydefault:
 
 	case 1:
 		yyDollar = yyS[yypt-7 : yypt+1]
-//line parser.y:28
+//line parser.y:29
 		{
 			yyVAL.genericSchema = yyDollar[5].genericSchema
 			yyVAL.genericSchema.NumericOID = yyDollar[3].text
@@ -474,89 +485,133 @@ yydefault:
 		}
 	case 4:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:37
+//line parser.y:38
 		{
 			yyVAL.text = yyDollar[1].text
 		}
 	case 5:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:40
+//line parser.y:41
 		{
 			yyVAL.text = yyDollar[1].text
 		}
 	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:44
+//line parser.y:45
 		{
 			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, OIDsRule)
 		}
 	case 7:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line parser.y:47
+//line parser.y:48
 		{
 			yyVAL.parameterizedKeyword = yyDollar[1].parameterizedKeyword
 			yyVAL.parameterizedKeyword.addParameter(yyDollar[5].text)
 		}
 	case 8:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:52
+//line parser.y:53
 		{
 			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, NumberIDsRule)
 		}
 	case 9:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser.y:55
+//line parser.y:56
 		{
 			yyVAL.parameterizedKeyword = yyDollar[1].parameterizedKeyword
 			yyVAL.parameterizedKeyword.addParameter(yyDollar[3].text)
 		}
 	case 10:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:60
+//line parser.y:61
 		{
 			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, OIDsRule)
 		}
 	case 11:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line parser.y:63
+//line parser.y:64
 		{
 			yyVAL.parameterizedKeyword = yyDollar[3].parameterizedKeyword
 		}
 	case 12:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:66
+//line parser.y:67
 		{
 			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, NumberIDsRule)
 		}
 	case 13:
 		yyDollar = yyS[yypt-5 : yypt+1]
-//line parser.y:69
+//line parser.y:70
 		{
 			yyVAL.parameterizedKeyword = yyDollar[3].parameterizedKeyword
 		}
 	case 14:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:82
+//line parser.y:74
+		{
+			yyVAL.text = yyDollar[1].text
+		}
+	case 15:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:77
+		{
+			yyVAL.text = yyDollar[1].text
+		}
+	case 16:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:81
+		{
+			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, QuotedStringsRule)
+		}
+	case 17:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser.y:84
+		{
+			yyVAL.parameterizedKeyword = yyDollar[1].parameterizedKeyword
+			yyVAL.parameterizedKeyword.addParameter(yyDollar[3].text)
+		}
+	case 18:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:89
+		{
+			yyVAL.parameterizedKeyword = newParameterizedKeywordWithParameter(yyDollar[1].text, QuotedStringsRule)
+		}
+	case 19:
+		yyDollar = yyS[yypt-5 : yypt+1]
+//line parser.y:92
+		{
+			yyVAL.parameterizedKeyword = yyDollar[3].parameterizedKeyword
+		}
+	case 20:
+		yyDollar = yyS[yypt-1 : yypt+1]
+//line parser.y:96
 		{
 			yyVAL.genericSchema = newGenericSchema()
 			yyVAL.genericSchema.addFlagKeywords(yyDollar[1].text)
 		}
-	case 15:
+	case 21:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser.y:86
+//line parser.y:100
 		{
 			yyVAL.genericSchema = newGenericSchema()
 			yyVAL.genericSchema.addParameterizedKeyword(yyDollar[1].text, yyDollar[3].parameterizedKeyword)
 		}
-	case 16:
+	case 22:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser.y:104
+		{
+			yyVAL.genericSchema = newGenericSchema()
+			yyVAL.genericSchema.addParameterizedKeyword(yyDollar[1].text, yyDollar[3].parameterizedKeyword)
+		}
+	case 23:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser.y:91
+//line parser.y:109
 		{
 			yyVAL.genericSchema = yyDollar[1].genericSchema
 		}
-	case 17:
+	case 24:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser.y:94
+//line parser.y:112
 		{
 			yyDollar[1].genericSchema.add(yyDollar[3].genericSchema)
 			yyVAL.genericSchema = yyDollar[1].genericSchema

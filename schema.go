@@ -19,6 +19,7 @@ const (
 	UnknownRule SourceRuleType = iota
 	OIDsRule
 	NumberIDsRule
+	QuotedStringsRule
 )
 
 func undupAppend(s []string, t string) []string {
