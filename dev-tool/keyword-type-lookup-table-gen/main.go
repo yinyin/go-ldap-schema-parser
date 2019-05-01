@@ -19,9 +19,11 @@ var keywordTypeIdentifierMapping = map[string]string{
 	"QuotedDescriptorS":    "QSTRINGS_ATTR_KEYWORD",
 	"QuotedDString":        "QSTRING_ATTR_KEYWORD",
 	"NumericOIDwithLength": "OIDLEN_ATTR_KEYWORD",
+	"_InternalKeywords":    "NOIDS_ATTR_KEYWORD",
 }
 
 const mappingTrap = "\\s*\"([A-Z]+)\"[`\\s\\\\s+]+\\*\\*([A-Za-z]+)\\*\\*\\s*"
+const keywordingTrap = "\\s*\"([A-Z]+)\"[`\\s\\\\s+]+\\(\\s*\"[a-zA-Z0-9]+\"(\\s*\\|\\s*\"[a-zA-Z0-9]+\")*\\s*\\)\\s*"
 
 func checkCompatiableTargetRule(keyword, a, b string) bool {
 	if keyword == "SUP" {
@@ -40,7 +42,8 @@ func checkCompatiableTargetRule(keyword, a, b string) bool {
 }
 
 func fetchKeywordTypeMapping(filePath string) (result map[string]string, err error) {
-	trap, err := regexp.Compile(mappingTrap)
+	trap1, err := regexp.Compile(mappingTrap)
+	trap2, err := regexp.Compile(keywordingTrap)
 	if nil != err {
 		return
 	}
@@ -55,7 +58,7 @@ func fetchKeywordTypeMapping(filePath string) (result map[string]string, err err
 	for {
 		line, err := reader.ReadString('\n')
 		lineNum++
-		m := trap.FindStringSubmatchIndex(line)
+		m := trap1.FindStringSubmatchIndex(line)
 		if nil != m {
 			keywordText := line[m[2]:m[3]]
 			typeText := line[m[4]:m[5]]
@@ -65,6 +68,14 @@ func fetchKeywordTypeMapping(filePath string) (result map[string]string, err err
 				return nil, err
 			}
 			result[keywordText] = typeText
+		} else if m = trap2.FindStringSubmatchIndex(line); nil != m {
+			keywordText := line[m[2]:m[3]]
+			prevType, ok := result[keywordText]
+			if ok && (prevType != "_InternalKeywords") {
+				err = fmt.Errorf("mis-match with existed type: keyword=%v, internal-keyword, prev-type=%v, line=%d", keywordText, prevType, lineNum)
+				return nil, err
+			}
+			result[keywordText] = "_InternalKeywords"
 		} else {
 			line = strings.TrimSpace(line)
 			if (line != "") && (line != "`\\s* \")\"`") && (line[0:1] != "#") {

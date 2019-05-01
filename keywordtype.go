@@ -14,4 +14,5 @@ var keywordTypeLookupMap = map[string]int{
 	"SUBSTR":   NOIDS_ATTR_KEYWORD,
 	"SUP":      NOIDS_ATTR_KEYWORD,
 	"SYNTAX":   OIDLEN_ATTR_KEYWORD,
+	"USAGE":    NOIDS_ATTR_KEYWORD,
 }
