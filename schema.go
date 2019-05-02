@@ -81,8 +81,7 @@ func (schema *GenericSchema) addFlagKeywords(keyword string) {
 }
 
 func (schema *GenericSchema) addParameterizedKeyword(keyword string, paramKeyword *ParameterizedKeyword) {
-	localParamKeyword, ok := schema.ParameterizedKeywords[keyword]
-	if ok {
+	if localParamKeyword := schema.ParameterizedKeywords[keyword]; nil != localParamKeyword {
 		localParamKeyword.add(paramKeyword)
 	} else {
 		paramKeyword.KeywordText = keyword
