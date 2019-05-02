@@ -3,6 +3,7 @@ package ldapschemaparser
 import (
 	"errors"
 	"log"
+	"strings"
 )
 
 // ErrParseFailed indicate parser stopped at failed state
@@ -96,6 +97,53 @@ func (schema *GenericSchema) add(other *GenericSchema) {
 	for kw, param := range other.ParameterizedKeywords {
 		schema.addParameterizedKeyword(kw, param)
 	}
+}
+
+func (schema *GenericSchema) getValuesOfParameterizedKeyword(keyword string) []string {
+	result := schema.ParameterizedKeywords[keyword]
+	if (nil == result) || (0 == len(result.Parameters)) {
+		return nil
+	}
+	return result.Parameters
+}
+
+func (schema *GenericSchema) getValueOfParameterizedKeyword(keyword string) string {
+	aux := schema.getValuesOfParameterizedKeyword(keyword)
+	if nil != aux {
+		l := len(aux) - 1
+		if l >= 0 {
+			return aux[l]
+		}
+	}
+	return ""
+}
+
+func (schema *GenericSchema) fetchExtensionProperties() (result map[string][]string) {
+	result = make(map[string][]string)
+	for keyword, parameters := range schema.ParameterizedKeywords {
+		if !isExtensionKeyword(keyword) {
+			continue
+		}
+		if 0 == len(parameters.Parameters) {
+			continue
+		}
+		result[keyword] = parameters.Parameters
+	}
+	if 0 == len(result) {
+		return nil
+	}
+	return result
+}
+
+// HasFlagKeyword checks if given keyword is contained in flag keywords
+func (schema *GenericSchema) HasFlagKeyword(keyword string) bool {
+	keyword = strings.ToUpper(keyword)
+	for _, k := range schema.FlagKeywords {
+		if k == keyword {
+			return true
+		}
+	}
+	return false
 }
 
 // Parse parsing given schema text into generic schema structure
