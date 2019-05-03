@@ -8,6 +8,9 @@ import (
 // ErrMissingNumericOID indicates numeric OID is required but not given.
 var ErrMissingNumericOID = errors.New("NumericOID is required")
 
+// ErrMissingRuleID indicates rule ID is required but not given.
+var ErrMissingRuleID = errors.New("RuleID is required")
+
 // ErrMissingField represents a required field is missing.
 type ErrMissingField struct {
 	FieldName string
