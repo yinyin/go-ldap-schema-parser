@@ -33,7 +33,7 @@ func NewMatchingRuleUseSchemaViaGenericSchema(generic *GenericSchema) (result *M
 	}, nil
 }
 
-// ParseMatchingRuleUseSchema parses object class schema text
+// ParseMatchingRuleUseSchema parses matching rule use schema text
 func ParseMatchingRuleUseSchema(schemaText string) (matchingRuleUseSchema *MatchingRuleUseSchema, err error) {
 	genericSchema, err := Parse(schemaText)
 	if nil != err {
