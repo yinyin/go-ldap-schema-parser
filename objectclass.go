@@ -22,7 +22,11 @@ type ObjectClassSchema struct {
 }
 
 // NewObjectClassSchemaViaGenericSchema creates object class schema instance from GenericSchema
-func NewObjectClassSchemaViaGenericSchema(generic *GenericSchema) (result *ObjectClassSchema) {
+func NewObjectClassSchemaViaGenericSchema(generic *GenericSchema) (result *ObjectClassSchema, err error) {
+	if "" == generic.NumericOID {
+		err = ErrMissingNumericOID
+		return
+	}
 	classKind := ClassKindStructural
 	if generic.HasFlagKeyword(ClassKindAbstract) {
 		classKind = ClassKindAbstract
@@ -39,7 +43,7 @@ func NewObjectClassSchemaViaGenericSchema(generic *GenericSchema) (result *Objec
 		Must:         generic.getValuesOfParameterizedKeyword("MUST"),
 		May:          generic.getValuesOfParameterizedKeyword("MAY"),
 		Extensions:   generic.fetchExtensionProperties(),
-	}
+	}, nil
 }
 
 // ParseObjectClassSchema parses object class schema text
@@ -48,6 +52,5 @@ func ParseObjectClassSchema(schemaText string) (objectClassSchema *ObjectClassSc
 	if nil != err {
 		return
 	}
-	objectClassSchema = NewObjectClassSchemaViaGenericSchema(genericSchema)
-	return
+	return NewObjectClassSchemaViaGenericSchema(genericSchema)
 }
