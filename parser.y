@@ -33,6 +33,11 @@ schema: '(' optionalSpace NUMERIC_OID SPACES attributeDefinitions optionalSpace 
   $$.NumericOID = $3
   yylex.(*schemaLexer).result = $$
 }
+| '(' optionalSpace NUMBER SPACES attributeDefinitions optionalSpace ')' {
+  $$ = $5
+  $$.NumericOID = $3
+  yylex.(*schemaLexer).result = $$
+}
 
 optionalSpace:
 |	SPACES
