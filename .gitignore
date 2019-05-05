@@ -39,4 +39,5 @@ Icon
 
 y.output
 /ldap-schema-parser
+/rfc-ldap-schema-extract
 /keyword-type-lookup-table-gen
