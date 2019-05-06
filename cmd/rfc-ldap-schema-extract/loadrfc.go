@@ -164,6 +164,7 @@ func loadRFC4519(path string, verbose bool, objectClassSchemas, attributeTypeSch
 	schemaModeMap := map[string]int{
 		"2.": targetSchemaAttributeType,
 		"3.": targetSchemaObjectClass,
+		"7.": targetSchemaUnknown,
 	}
 	oidTargetMapByChapter := map[string]map[string]int{
 		"*": {},
