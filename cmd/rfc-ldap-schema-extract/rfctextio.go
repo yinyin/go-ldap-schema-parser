@@ -34,21 +34,25 @@ func init() {
 func checkSchemaStartLine(l string, offset int) bool {
 	spaceCount := 0
 	numberCount := 0
+	dotCount := 0
+	othersCount := 0
 	for idx, ch := range []rune(l) {
-		if idx < offset {
+		if idx < (offset + 1) {
 			continue
 		}
 		if ch == ')' {
 			break
-		}
-		if ch == ' ' {
+		} else if ch == ' ' {
 			spaceCount++
-		}
-		if (ch >= '0') && (ch <= '9') {
+		} else if (ch >= '0') && (ch <= '9') {
 			numberCount++
+		} else if ch == '.' {
+			dotCount++
+		} else {
+			othersCount++
 		}
 	}
-	if (spaceCount < 2) || (numberCount < 1) {
+	if ((othersCount > 0) && (spaceCount < 2)) || (numberCount < 1) {
 		return false
 	}
 	return true
