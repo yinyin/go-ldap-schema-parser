@@ -42,25 +42,12 @@ func appendByTargetSchema(targetSchema int, nameTargetMap map[string]int, object
 	return objectClassSchemas, attributeTypeSchemas
 }
 
-func loadRFC4512(path string, objectClassSchemas, attributeTypeSchemas []string) ([]string, []string, error) {
+func loadRFCContent(path string, schemaModeMap, nameTargetMap map[string]int, objectClassSchemas, attributeTypeSchemas []string) ([]string, []string, error) {
 	fp, err := OpenRFCTextReader(path)
 	if nil != err {
 		return nil, nil, err
 	}
 	defer fp.Close()
-	schemaModeMap := map[string]int{
-		"2.4.":   targetSchemaObjectClass,
-		"2.6.2.": targetSchemaAttributeType,
-		"4.2.":   targetSchemaByName,
-		"4.2.1.": targetSchemaAttributeType,
-		"4.3.":   targetSchemaObjectClass,
-		"4.4.":   targetSchemaAttributeType,
-		"7.":     targetSchemaUnknown,
-	}
-	nameTargetMap := map[string]int{
-		"subschemaSubentry": targetSchemaAttributeType,
-		"subschema":         targetSchemaObjectClass,
-	}
 	targetSchema := targetSchemaUnknown
 	for {
 		l, lineType, err := fp.ReadLine()
@@ -80,6 +67,23 @@ func loadRFC4512(path string, objectClassSchemas, attributeTypeSchemas []string)
 			objectClassSchemas, attributeTypeSchemas = appendByTargetSchema(targetSchema, nameTargetMap, objectClassSchemas, attributeTypeSchemas, l)
 		}
 	}
+}
+
+func loadRFC4512(path string, objectClassSchemas, attributeTypeSchemas []string) ([]string, []string, error) {
+	schemaModeMap := map[string]int{
+		"2.4.":   targetSchemaObjectClass,
+		"2.6.2.": targetSchemaAttributeType,
+		"4.2.":   targetSchemaByName,
+		"4.2.1.": targetSchemaAttributeType,
+		"4.3.":   targetSchemaObjectClass,
+		"4.4.":   targetSchemaAttributeType,
+		"7.":     targetSchemaUnknown,
+	}
+	nameTargetMap := map[string]int{
+		"subschemaSubentry": targetSchemaAttributeType,
+		"subschema":         targetSchemaObjectClass,
+	}
+	return loadRFCContent(path, schemaModeMap, nameTargetMap, objectClassSchemas, attributeTypeSchemas)
 }
 
 func loadRFC4517(path string) (err error) {
