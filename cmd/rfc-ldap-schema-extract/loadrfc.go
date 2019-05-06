@@ -167,10 +167,6 @@ func loadRFC4519(path string, verbose bool, objectClassSchemas, attributeTypeSch
 	}
 	oidTargetMapByChapter := map[string]map[string]int{
 		"*": {},
-		"3.3.24.": {
-			"2.5.6.2":                       targetSchemaSkip,
-			"1.3.6.1.4.1.1466.115.121.1.37": targetSchemaLDAPSyntax,
-		},
 	}
 	return loadRFCContent(path, verbose, schemaModeMap, oidTargetMapByChapter, objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas)
 }
