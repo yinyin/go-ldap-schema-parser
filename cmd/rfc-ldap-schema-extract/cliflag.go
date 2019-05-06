@@ -5,9 +5,10 @@ import (
 	"fmt"
 )
 
-func parseCommandParam() (rfc4512Path, rfc4517Path string, err error) {
+func parseCommandParam() (rfc4512Path, rfc4517Path string, verbose bool, err error) {
 	flag.StringVar(&rfc4512Path, "rfc4512", "", "path to RFC-4512 text file")
 	flag.StringVar(&rfc4517Path, "rfc4517", "", "path to RFC-4517 text file")
+	flag.BoolVar(&verbose, "verbose", false, "enable verbose mode")
 	flag.Parse()
 	if "" == rfc4512Path {
 		err = fmt.Errorf("require text file of RFC-4512")
