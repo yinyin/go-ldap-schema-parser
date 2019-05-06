@@ -85,12 +85,37 @@ func countLeadingSpace(l string) (spaceCount int) {
 	return
 }
 
+func checkSchemaComplete(l string) bool {
+	pbalance := 0
+	inString := false
+	for _, ch := range []rune(l) {
+		switch ch {
+		case '\'':
+			inString = !inString
+		case '(':
+			if inString {
+				break
+			}
+			pbalance++
+		case ')':
+			if inString {
+				break
+			}
+			pbalance--
+		}
+	}
+	if 0 == pbalance {
+		return true
+	}
+	return false
+}
+
 func isSchemaEnd(l string) bool {
 	a := []rune(l)
 	for idx := len(a) - 1; idx >= 0; idx-- {
 		ch := a[idx]
 		if ')' == ch {
-			return true
+			return checkSchemaComplete(l)
 		} else if ' ' != ch {
 			break
 		}
@@ -185,7 +210,7 @@ func (b *RFCTextReader) ReadLine() (v string, lineType int, err error) {
 			}
 			v = strings.TrimLeftFunc(v, unicode.IsSpace)
 			b.schemaTextBuffer = b.schemaTextBuffer + " " + v
-			if isSchemaEnd(v) {
+			if isSchemaEnd(b.schemaTextBuffer) {
 				b.mode = readModeNormal
 				v = b.schemaTextBuffer
 				lineType = LineTypeSchema
