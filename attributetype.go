@@ -62,6 +62,27 @@ func NewAttributeTypeSchemaViaGenericSchema(generic *GenericSchema) (result *Att
 	}, nil
 }
 
+func (s *AttributeTypeSchema) String() string {
+	b := SchemaTextBuilder{}
+	b.AppendFragment(s.NumericOID)
+	b.AppendQStringSlice("NAME", s.Name)
+	b.AppendQString("DESC", s.Description)
+	b.AppendFlag("OBSOLETE", s.Obsolete)
+	b.AppendBareString("SUP", s.SuperType)
+	b.AppendBareString("EQUALITY", s.Equality)
+	b.AppendBareString("ORDERING", s.Ordering)
+	b.AppendBareString("SUBSTR", s.SubString)
+	b.AppendBareString("SYNTAX", s.Syntax)
+	b.AppendFlag("SINGLE-VALUE", s.SingleValue)
+	b.AppendFlag("COLLECTIVE", s.Collective)
+	b.AppendFlag("NO-USER-MODIFICATION", s.NoUserModification)
+	if s.Usage != AttributeUsageUserApplications {
+		b.AppendBareString("USAGE", s.Usage)
+	}
+	b.AppendExtensions(s.Extensions)
+	return b.String()
+}
+
 // ParseAttributeTypeSchema parses attribute type schema text
 func ParseAttributeTypeSchema(schemaText string) (attributeTypeSchema *AttributeTypeSchema, err error) {
 	genericSchema, err := Parse(schemaText)
