@@ -32,6 +32,20 @@ func NewDITContentRuleSchemaViaGenericSchema(generic *GenericSchema) (result *DI
 	}, nil
 }
 
+func (s *DITContentRuleSchema) String() string {
+	b := SchemaTextBuilder{}
+	b.AppendFragment(s.NumericOID)
+	b.AppendQStringSlice("NAME", s.Name)
+	b.AppendQString("DESC", s.Description)
+	b.AppendFlag("OBSOLETE", s.Obsolete)
+	b.AppendOIDSlice("AUX", s.Aux)
+	b.AppendOIDSlice("MUST", s.Must)
+	b.AppendOIDSlice("MAY", s.May)
+	b.AppendOIDSlice("NOT", s.Not)
+	b.AppendExtensions(s.Extensions)
+	return b.String()
+}
+
 // ParseDITContentRuleSchema parses DIT content rule schema text
 func ParseDITContentRuleSchema(schemaText string) (ditContentRuleSchema *DITContentRuleSchema, err error) {
 	genericSchema, err := Parse(schemaText)
