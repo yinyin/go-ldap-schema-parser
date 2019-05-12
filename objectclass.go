@@ -46,6 +46,22 @@ func NewObjectClassSchemaViaGenericSchema(generic *GenericSchema) (result *Objec
 	}, nil
 }
 
+func (s *ObjectClassSchema) String() string {
+	b := SchemaTextBuilder{}
+	b.AppendFragment(s.NumericOID)
+	b.AppendQStringSlice("NAME", s.Name)
+	b.AppendQString("DESC", s.Description)
+	b.AppendFlag("OBSOLETE", s.Obsolete)
+	b.AppendOIDSlice("SUP", s.SuperClasses)
+	if s.ClassKind != ClassKindStructural {
+		b.AppendFragment(s.ClassKind)
+	}
+	b.AppendOIDSlice("MUST", s.Must)
+	b.AppendOIDSlice("MAY", s.May)
+	b.AppendExtensions(s.Extensions)
+	return b.String()
+}
+
 // ParseObjectClassSchema parses object class schema text
 func ParseObjectClassSchema(schemaText string) (objectClassSchema *ObjectClassSchema, err error) {
 	genericSchema, err := Parse(schemaText)

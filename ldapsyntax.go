@@ -20,6 +20,14 @@ func NewLDAPSyntaxSchemaViaGenericSchema(generic *GenericSchema) (result *LDAPSy
 	}, nil
 }
 
+func (s *LDAPSyntaxSchema) String() string {
+	b := SchemaTextBuilder{}
+	b.AppendFragment(s.NumericOID)
+	b.AppendQString("DESC", s.Description)
+	b.AppendExtensions(s.Extensions)
+	return b.String()
+}
+
 // ParseLDAPSyntaxSchema parses LDAP syntax schema text
 func ParseLDAPSyntaxSchema(schemaText string) (ldapSyntaxSchema *LDAPSyntaxSchema, err error) {
 	genericSchema, err := Parse(schemaText)

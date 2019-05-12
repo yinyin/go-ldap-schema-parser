@@ -33,6 +33,17 @@ func NewMatchingRuleUseSchemaViaGenericSchema(generic *GenericSchema) (result *M
 	}, nil
 }
 
+func (s *MatchingRuleUseSchema) String() string {
+	b := SchemaTextBuilder{}
+	b.AppendFragment(s.NumericOID)
+	b.AppendQStringSlice("NAME", s.Name)
+	b.AppendQString("DESC", s.Description)
+	b.AppendFlag("OBSOLETE", s.Obsolete)
+	b.AppendOIDSlice("APPLIES", s.AppliesTo)
+	b.AppendExtensions(s.Extensions)
+	return b.String()
+}
+
 // ParseMatchingRuleUseSchema parses matching rule use schema text
 func ParseMatchingRuleUseSchema(schemaText string) (matchingRuleUseSchema *MatchingRuleUseSchema, err error) {
 	genericSchema, err := Parse(schemaText)

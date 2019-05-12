@@ -44,6 +44,19 @@ func NewNameFormSchemaViaGenericSchema(generic *GenericSchema) (result *NameForm
 	}, nil
 }
 
+func (s *NameFormSchema) String() string {
+	b := SchemaTextBuilder{}
+	b.AppendFragment(s.NumericOID)
+	b.AppendQStringSlice("NAME", s.Name)
+	b.AppendQString("DESC", s.Description)
+	b.AppendFlag("OBSOLETE", s.Obsolete)
+	b.AppendBareString("OC", s.ObjectClass)
+	b.AppendOIDSlice("MUST", s.Must)
+	b.AppendOIDSlice("MAY", s.May)
+	b.AppendExtensions(s.Extensions)
+	return b.String()
+}
+
 // ParseNameFormSchema parses name form schema text
 func ParseNameFormSchema(schemaText string) (nameFormSchema *NameFormSchema, err error) {
 	genericSchema, err := Parse(schemaText)

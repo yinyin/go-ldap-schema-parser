@@ -35,6 +35,18 @@ func NewDITStructureRuleSchemaViaGenericSchema(generic *GenericSchema) (result *
 	}, nil
 }
 
+func (s *DITStructureRuleSchema) String() string {
+	b := SchemaTextBuilder{}
+	b.AppendFragment(s.RuleID)
+	b.AppendQStringSlice("NAME", s.Name)
+	b.AppendQString("DESC", s.Description)
+	b.AppendFlag("OBSOLETE", s.Obsolete)
+	b.AppendBareString("FORM", s.NameForm)
+	b.AppendOIDSlice("SUP", s.SuperRules)
+	b.AppendExtensions(s.Extensions)
+	return b.String()
+}
+
 // ParseDITStructureRuleSchema parses DIT content rule schema text
 func ParseDITStructureRuleSchema(schemaText string) (ditStructureRuleSchema *DITStructureRuleSchema, err error) {
 	genericSchema, err := Parse(schemaText)
