@@ -53,9 +53,7 @@ func (s *ObjectClassSchema) String() string {
 	b.AppendQString("DESC", s.Description)
 	b.AppendFlag("OBSOLETE", s.Obsolete)
 	b.AppendOIDSlice("SUP", s.SuperClasses)
-	if s.ClassKind != ClassKindStructural {
-		b.AppendFragment(s.ClassKind)
-	}
+	b.AppendFragment(s.ClassKind)
 	b.AppendOIDSlice("MUST", s.Must)
 	b.AppendOIDSlice("MAY", s.May)
 	b.AppendExtensions(s.Extensions)
