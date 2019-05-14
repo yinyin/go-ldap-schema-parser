@@ -1,12 +1,19 @@
 package ldapschemaparser
 
+import (
+	"log"
+)
+
 // LDAPSchemaStore is a container of LDAP schemas
 type LDAPSchemaStore struct {
 	ldapSyntaxSchemaIndex       map[string]*GenericSchema
 	matchingRuleSchemaIndex     map[string]*GenericSchema
+	matchingRuleNameIndex       map[string]*GenericSchema
 	matchingRuleUseSchemaIndex  map[string]*GenericSchema
 	attributeTypeSchemaIndex    map[string]*GenericSchema
+	attributeTypeNameIndex      map[string]*GenericSchema
 	objectClassSchemaIndex      map[string]*GenericSchema
+	objectClassNameIndex        map[string]*GenericSchema
 	ditContentRuleSchemaIndex   map[string]*GenericSchema
 	ditStructureRuleSchemaIndex map[string]*GenericSchema
 	nameFormSchemaIndex         map[string]*GenericSchema
@@ -17,9 +24,12 @@ func NewLDAPSchemaStore() (store *LDAPSchemaStore) {
 	return &LDAPSchemaStore{
 		ldapSyntaxSchemaIndex:       make(map[string]*GenericSchema),
 		matchingRuleSchemaIndex:     make(map[string]*GenericSchema),
+		matchingRuleNameIndex:       make(map[string]*GenericSchema),
 		matchingRuleUseSchemaIndex:  make(map[string]*GenericSchema),
 		attributeTypeSchemaIndex:    make(map[string]*GenericSchema),
+		attributeTypeNameIndex:      make(map[string]*GenericSchema),
 		objectClassSchemaIndex:      make(map[string]*GenericSchema),
+		objectClassNameIndex:        make(map[string]*GenericSchema),
 		ditContentRuleSchemaIndex:   make(map[string]*GenericSchema),
 		ditStructureRuleSchemaIndex: make(map[string]*GenericSchema),
 		nameFormSchemaIndex:         make(map[string]*GenericSchema),
@@ -58,8 +68,18 @@ func (store *LDAPSchemaStore) AddMatchingRuleSchemaText(schemaText string) (err 
 	existedSchema := store.matchingRuleSchemaIndex[matchingRuleSchema.NumericOID]
 	if nil != existedSchema {
 		existedSchema.add(genericSchema)
+		genericSchema = existedSchema
 	} else {
 		store.matchingRuleSchemaIndex[matchingRuleSchema.NumericOID] = genericSchema
+	}
+	for _, name := range matchingRuleSchema.Name {
+		if existedSchema = store.matchingRuleNameIndex[name]; nil != existedSchema {
+			if existedSchema == genericSchema {
+				return nil
+			}
+			log.Printf("WARN: over-writing matchingRuleNameIndex (name=%v): %v <= %v", name, existedSchema, genericSchema)
+		}
+		store.matchingRuleNameIndex[name] = genericSchema
 	}
 	return nil
 }
@@ -96,8 +116,18 @@ func (store *LDAPSchemaStore) AddAttributeTypeSchemaText(schemaText string) (err
 	existedSchema := store.attributeTypeSchemaIndex[attributeTypeSchema.NumericOID]
 	if nil != existedSchema {
 		existedSchema.add(genericSchema)
+		genericSchema = existedSchema
 	} else {
 		store.attributeTypeSchemaIndex[attributeTypeSchema.NumericOID] = genericSchema
+	}
+	for _, name := range attributeTypeSchema.Name {
+		if existedSchema = store.attributeTypeNameIndex[name]; nil != existedSchema {
+			if existedSchema == genericSchema {
+				return nil
+			}
+			log.Printf("WARN: over-writing attributeTypeNameIndex (name=%v): %v <= %v", name, existedSchema, genericSchema)
+		}
+		store.attributeTypeNameIndex[name] = genericSchema
 	}
 	return nil
 }
@@ -115,8 +145,18 @@ func (store *LDAPSchemaStore) AddObjectClassSchemaText(schemaText string) (err e
 	existedSchema := store.objectClassSchemaIndex[objectClassSchema.NumericOID]
 	if nil != existedSchema {
 		existedSchema.add(genericSchema)
+		genericSchema = existedSchema
 	} else {
 		store.objectClassSchemaIndex[objectClassSchema.NumericOID] = genericSchema
+	}
+	for _, name := range objectClassSchema.Name {
+		if existedSchema = store.objectClassNameIndex[name]; nil != existedSchema {
+			if existedSchema == genericSchema {
+				return nil
+			}
+			log.Printf("WARN: over-writing objectClassNameIndex (name=%v): %v <= %v", name, existedSchema, genericSchema)
+		}
+		store.objectClassNameIndex[name] = genericSchema
 	}
 	return nil
 }
