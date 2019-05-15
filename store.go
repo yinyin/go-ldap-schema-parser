@@ -2,7 +2,18 @@ package ldapschemaparser
 
 import (
 	"log"
+	"os"
+	"sort"
 )
+
+func sortedMapKey(m map[string]*GenericSchema) (result []string) {
+	result = make([]string, 0, len(m))
+	for k := range m {
+		result = append(result, k)
+	}
+	sort.Strings(result)
+	return
+}
 
 // LDAPSchemaStore is a container of LDAP schemas
 type LDAPSchemaStore struct {
@@ -214,6 +225,168 @@ func (store *LDAPSchemaStore) AddNameFormSchemaText(schemaText string) (err erro
 		existedSchema.add(genericSchema)
 	} else {
 		store.nameFormSchemaIndex[nameFormSchema.NumericOID] = genericSchema
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeLDAPSyntaxSchema(fp *os.File) (err error) {
+	for _, oid := range sortedMapKey(store.ldapSyntaxSchemaIndex) {
+		genericSchema := store.ldapSyntaxSchemaIndex[oid]
+		ldapSyntaxSchema, err := NewLDAPSyntaxSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create LDAP syntax schema object from generic schema [%v]: %v", oid, err)
+			continue
+		}
+		line := "ldap-syntax:\t" + ldapSyntaxSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeMatchingRuleSchema(fp *os.File) (err error) {
+	for _, oid := range sortedMapKey(store.matchingRuleSchemaIndex) {
+		genericSchema := store.matchingRuleSchemaIndex[oid]
+		matchingRuleSchema, err := NewMatchingRuleSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create matching rule schema object from generic schema [%v]: %v", oid, err)
+			continue
+		}
+		line := "matching-rule:\t" + matchingRuleSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeMatchingRuleUseSchema(fp *os.File) (err error) {
+	for _, oid := range sortedMapKey(store.matchingRuleUseSchemaIndex) {
+		genericSchema := store.matchingRuleSchemaIndex[oid]
+		matchingRuleUseSchema, err := NewMatchingRuleUseSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create matching rule use schema object from generic schema [%v]: %v", oid, err)
+			continue
+		}
+		line := "matching-rule-use:\t" + matchingRuleUseSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeAttributeTypeSchema(fp *os.File) (err error) {
+	for _, oid := range sortedMapKey(store.attributeTypeSchemaIndex) {
+		genericSchema := store.attributeTypeSchemaIndex[oid]
+		attributeTypeSchema, err := NewAttributeTypeSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create attribute type schema object from generic schema [%v]: %v", oid, err)
+			continue
+		}
+		line := "attribute-type:\t" + attributeTypeSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeObjectClassSchema(fp *os.File) (err error) {
+	for _, oid := range sortedMapKey(store.objectClassSchemaIndex) {
+		genericSchema := store.objectClassSchemaIndex[oid]
+		objectClassSchema, err := NewObjectClassSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create object class schema object from generic schema [%v]: %v", oid, err)
+			continue
+		}
+		line := "object-class:\t" + objectClassSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeDITContentRuleSchema(fp *os.File) (err error) {
+	for _, oid := range sortedMapKey(store.ditContentRuleSchemaIndex) {
+		genericSchema := store.objectClassSchemaIndex[oid]
+		ditContentRuleSchema, err := NewDITContentRuleSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create DIT content rule schema object from generic schema [%v]: %v", oid, err)
+			continue
+		}
+		line := "dit-content-rule:\t" + ditContentRuleSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeDITStructureRuleSchema(fp *os.File) (err error) {
+	for _, ruleID := range sortedMapKey(store.ditStructureRuleSchemaIndex) {
+		genericSchema := store.objectClassSchemaIndex[ruleID]
+		ditStructureRuleSchema, err := NewDITStructureRuleSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create DIT structure rule schema object from generic schema [%v]: %v", ruleID, err)
+			continue
+		}
+		line := "dit-structure-rule:\t" + ditStructureRuleSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) writeNameFormSchema(fp *os.File) (err error) {
+	for _, oid := range sortedMapKey(store.nameFormSchemaIndex) {
+		genericSchema := store.nameFormSchemaIndex[oid]
+		nameFormSchema, err := NewNameFormSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create name form schema object from generic schema [%v]: %v", oid, err)
+			continue
+		}
+		line := "name-form:\t" + nameFormSchema.String() + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+// WriteToFile write content of store into file at given path
+func (store *LDAPSchemaStore) WriteToFile(name string) (err error) {
+	fp, err := os.Create(name)
+	if nil != err {
+		return
+	}
+	defer fp.Close()
+	if err = store.writeLDAPSyntaxSchema(fp); nil != err {
+		return
+	}
+	if err = store.writeMatchingRuleSchema(fp); nil != err {
+		return
+	}
+	if err = store.writeMatchingRuleUseSchema(fp); nil != err {
+		return
+	}
+	if err = store.writeAttributeTypeSchema(fp); nil != err {
+		return
+	}
+	if err = store.writeObjectClassSchema(fp); nil != err {
+		return
+	}
+	if err = store.writeDITContentRuleSchema(fp); nil != err {
+		return
+	}
+	if err = store.writeDITStructureRuleSchema(fp); nil != err {
+		return
+	}
+	if err = store.writeNameFormSchema(fp); nil != err {
+		return
 	}
 	return nil
 }
