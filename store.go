@@ -1,9 +1,26 @@
 package ldapschemaparser
 
 import (
+	"bufio"
+	"errors"
+	"io"
 	"log"
 	"os"
 	"sort"
+	"strings"
+)
+
+const lineFieldSeparator string = ":\t"
+
+const (
+	recordTypeLDAPSyntaxSchema       string = "ldap-syntax"
+	recordTypeMatchingRuleSchema            = "matching-rule"
+	recordTypeMatchingRuleUseSchema         = "matching-rule-use"
+	recordTypeAttributeTypeSchema           = "attribute-type"
+	recordTypeObjectClassSchema             = "object-class"
+	recordTypeDITContentRuleSchema          = "dit-content-rule"
+	recordTypeDITStructureRuleSchema        = "dit-structure-rule"
+	recordTypeNameFormSchema                = "name-form"
 )
 
 func sortedMapKey(m map[string]*GenericSchema) (result []string) {
@@ -237,7 +254,7 @@ func (store *LDAPSchemaStore) writeLDAPSyntaxSchema(fp *os.File) (err error) {
 			log.Printf("ERROR: cannot create LDAP syntax schema object from generic schema [%v]: %v", oid, err)
 			continue
 		}
-		line := "ldap-syntax:\t" + ldapSyntaxSchema.String() + "\n"
+		line := recordTypeLDAPSyntaxSchema + lineFieldSeparator + ldapSyntaxSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -253,7 +270,7 @@ func (store *LDAPSchemaStore) writeMatchingRuleSchema(fp *os.File) (err error) {
 			log.Printf("ERROR: cannot create matching rule schema object from generic schema [%v]: %v", oid, err)
 			continue
 		}
-		line := "matching-rule:\t" + matchingRuleSchema.String() + "\n"
+		line := recordTypeMatchingRuleSchema + lineFieldSeparator + matchingRuleSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -269,7 +286,7 @@ func (store *LDAPSchemaStore) writeMatchingRuleUseSchema(fp *os.File) (err error
 			log.Printf("ERROR: cannot create matching rule use schema object from generic schema [%v]: %v", oid, err)
 			continue
 		}
-		line := "matching-rule-use:\t" + matchingRuleUseSchema.String() + "\n"
+		line := recordTypeMatchingRuleUseSchema + lineFieldSeparator + matchingRuleUseSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -285,7 +302,7 @@ func (store *LDAPSchemaStore) writeAttributeTypeSchema(fp *os.File) (err error) 
 			log.Printf("ERROR: cannot create attribute type schema object from generic schema [%v]: %v", oid, err)
 			continue
 		}
-		line := "attribute-type:\t" + attributeTypeSchema.String() + "\n"
+		line := recordTypeAttributeTypeSchema + lineFieldSeparator + attributeTypeSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -301,7 +318,7 @@ func (store *LDAPSchemaStore) writeObjectClassSchema(fp *os.File) (err error) {
 			log.Printf("ERROR: cannot create object class schema object from generic schema [%v]: %v", oid, err)
 			continue
 		}
-		line := "object-class:\t" + objectClassSchema.String() + "\n"
+		line := recordTypeObjectClassSchema + lineFieldSeparator + objectClassSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -317,7 +334,7 @@ func (store *LDAPSchemaStore) writeDITContentRuleSchema(fp *os.File) (err error)
 			log.Printf("ERROR: cannot create DIT content rule schema object from generic schema [%v]: %v", oid, err)
 			continue
 		}
-		line := "dit-content-rule:\t" + ditContentRuleSchema.String() + "\n"
+		line := recordTypeDITContentRuleSchema + lineFieldSeparator + ditContentRuleSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -333,7 +350,7 @@ func (store *LDAPSchemaStore) writeDITStructureRuleSchema(fp *os.File) (err erro
 			log.Printf("ERROR: cannot create DIT structure rule schema object from generic schema [%v]: %v", ruleID, err)
 			continue
 		}
-		line := "dit-structure-rule:\t" + ditStructureRuleSchema.String() + "\n"
+		line := recordTypeDITStructureRuleSchema + lineFieldSeparator + ditStructureRuleSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -349,7 +366,7 @@ func (store *LDAPSchemaStore) writeNameFormSchema(fp *os.File) (err error) {
 			log.Printf("ERROR: cannot create name form schema object from generic schema [%v]: %v", oid, err)
 			continue
 		}
-		line := "name-form:\t" + nameFormSchema.String() + "\n"
+		line := recordTypeNameFormSchema + lineFieldSeparator + nameFormSchema.String() + "\n"
 		if _, err = fp.WriteString(line); nil != err {
 			return err
 		}
@@ -387,6 +404,68 @@ func (store *LDAPSchemaStore) WriteToFile(name string) (err error) {
 	}
 	if err = store.writeNameFormSchema(fp); nil != err {
 		return
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) readLine(ln string) (err error) {
+	ln = strings.TrimSpace(ln)
+	idx := strings.Index(ln, lineFieldSeparator)
+	if idx < 0 {
+		if len(ln) > 0 {
+			log.Printf("WARN: dropping line - [%v]", ln)
+		}
+		return nil
+	}
+	k := ln[0:idx]
+	v := strings.TrimSpace(ln[idx+len(lineFieldSeparator):])
+	switch k {
+	case recordTypeLDAPSyntaxSchema:
+		err = store.AddLDAPSyntaxSchemaText(v)
+	case recordTypeMatchingRuleSchema:
+		err = store.AddMatchingRuleSchemaText(v)
+	case recordTypeMatchingRuleUseSchema:
+		err = store.AddMatchingRuleUseSchemaText(v)
+	case recordTypeAttributeTypeSchema:
+		err = store.AddAttributeTypeSchemaText(v)
+	case recordTypeObjectClassSchema:
+		err = store.AddObjectClassSchemaText(v)
+	case recordTypeDITContentRuleSchema:
+		err = store.AddDITContentRuleSchemaText(v)
+	case recordTypeDITStructureRuleSchema:
+		err = store.AddDITStructureRuleSchemaText(v)
+	case recordTypeNameFormSchema:
+		err = store.AddNameFormSchemaText(v)
+	default:
+		err = errors.New("unknown record type key: " + k)
+	}
+	return
+}
+
+// ReadFromFile read content into store from file at given path
+func (store *LDAPSchemaStore) ReadFromFile(name string) (err error) {
+	fp, err := os.Open(name)
+	if nil != err {
+		return
+	}
+	defer fp.Close()
+	reader := bufio.NewReader(fp)
+	num := 0
+	for {
+		ln, err := reader.ReadString('\n')
+		num++
+		errParse := store.readLine(ln)
+		if nil != err {
+			if io.EOF == err {
+				break
+			}
+			log.Printf("ERROR: failed on reading from file (file=%v, line=%d, err=%v)", name, num, err)
+			return err
+		}
+		if nil != errParse {
+			log.Printf("ERROR: failed on parsing schema text from file (file=%v, line=%d, err=%v)", name, num, errParse)
+			return errParse
+		}
 	}
 	return nil
 }
