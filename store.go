@@ -101,13 +101,14 @@ func (store *LDAPSchemaStore) AddMatchingRuleSchemaText(schemaText string) (err 
 		store.matchingRuleSchemaIndex[matchingRuleSchema.NumericOID] = genericSchema
 	}
 	for _, name := range matchingRuleSchema.Name {
-		if existedSchema = store.matchingRuleNameIndex[name]; nil != existedSchema {
+		lowercaseName := strings.ToLower(name)
+		if existedSchema = store.matchingRuleNameIndex[lowercaseName]; nil != existedSchema {
 			if existedSchema == genericSchema {
 				return nil
 			}
 			log.Printf("WARN: over-writing matchingRuleNameIndex (name=%v): %v <= %v", name, existedSchema, genericSchema)
 		}
-		store.matchingRuleNameIndex[name] = genericSchema
+		store.matchingRuleNameIndex[lowercaseName] = genericSchema
 	}
 	return nil
 }
@@ -149,13 +150,14 @@ func (store *LDAPSchemaStore) AddAttributeTypeSchemaText(schemaText string) (err
 		store.attributeTypeSchemaIndex[attributeTypeSchema.NumericOID] = genericSchema
 	}
 	for _, name := range attributeTypeSchema.Name {
-		if existedSchema = store.attributeTypeNameIndex[name]; nil != existedSchema {
+		lowercaseName := strings.ToLower(name)
+		if existedSchema = store.attributeTypeNameIndex[lowercaseName]; nil != existedSchema {
 			if existedSchema == genericSchema {
 				return nil
 			}
 			log.Printf("WARN: over-writing attributeTypeNameIndex (name=%v): %v <= %v", name, existedSchema, genericSchema)
 		}
-		store.attributeTypeNameIndex[name] = genericSchema
+		store.attributeTypeNameIndex[lowercaseName] = genericSchema
 	}
 	return nil
 }
@@ -178,13 +180,14 @@ func (store *LDAPSchemaStore) AddObjectClassSchemaText(schemaText string) (err e
 		store.objectClassSchemaIndex[objectClassSchema.NumericOID] = genericSchema
 	}
 	for _, name := range objectClassSchema.Name {
-		if existedSchema = store.objectClassNameIndex[name]; nil != existedSchema {
+		lowercaseName := strings.ToLower(name)
+		if existedSchema = store.objectClassNameIndex[lowercaseName]; nil != existedSchema {
 			if existedSchema == genericSchema {
 				return nil
 			}
 			log.Printf("WARN: over-writing objectClassNameIndex (name=%v): %v <= %v", name, existedSchema, genericSchema)
 		}
-		store.objectClassNameIndex[name] = genericSchema
+		store.objectClassNameIndex[lowercaseName] = genericSchema
 	}
 	return nil
 }
