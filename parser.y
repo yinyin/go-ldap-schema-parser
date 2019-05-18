@@ -48,6 +48,18 @@ oid: NUMERIC_OID {
 | KEYWORD {
   $$ = $1
 }
+| NOIDS_ATTR_KEYWORD {
+  $$ = $1
+}
+| OIDLEN_ATTR_KEYWORD {
+  $$ = $1
+}
+| QSTRINGS_ATTR_KEYWORD {
+  $$ = $1
+}
+| QSTRING_ATTR_KEYWORD {
+  $$ = $1
+}
 
 dollarOIDs: oid {
   $$ = newParameterizedKeywordWithParameter($1, OIDsRule)
