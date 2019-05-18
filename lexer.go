@@ -11,6 +11,10 @@ import (
 
 const dataEOF = 0
 
+func init() {
+	yyErrorVerbose = true
+}
+
 func lookupKeywordType(keywordText string) (string, int) {
 	u := strings.ToUpper(keywordText)
 	keywordIdentifier, ok := keywordTypeLookupMap[u]
