@@ -171,3 +171,17 @@ func loadRFC4519(path string, verbose bool, objectClassSchemas, attributeTypeSch
 	}
 	return loadRFCContent(path, verbose, schemaModeMap, oidTargetMapByChapter, objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas)
 }
+
+func loadRFC4523(path string, verbose bool, objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas []string) ([]string, []string, []string, []string, error) {
+	schemaModeMap := map[string]int{
+		"2.": targetSchemaLDAPSyntax,
+		"3.": targetSchemaMatchingRule,
+		"4.": targetSchemaAttributeType,
+		"5.": targetSchemaObjectClass,
+		"7.": targetSchemaUnknown,
+	}
+	oidTargetMapByChapter := map[string]map[string]int{
+		"*": {},
+	}
+	return loadRFCContent(path, verbose, schemaModeMap, oidTargetMapByChapter, objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas)
+}

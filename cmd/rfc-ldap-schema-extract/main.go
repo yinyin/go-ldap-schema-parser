@@ -40,7 +40,7 @@ func writeToFile(outputPath string, objectClassSchemas, attributeTypeSchemas, ma
 }
 
 func main() {
-	rfc4512Path, rfc4517Path, rfc4519Path, outputPath, verbose, err := parseCommandParam()
+	rfc4512Path, rfc4517Path, rfc4519Path, rfc4523Path, outputPath, verbose, err := parseCommandParam()
 	if nil != err {
 		log.Fatalf("missing parameter: %v", err)
 		return
@@ -51,6 +51,8 @@ func main() {
 	log.Printf("INFO: load RFC 4517: err=%v", err)
 	objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas, err = loadRFC4519(rfc4519Path, verbose, objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas)
 	log.Printf("INFO: load RFC 4519: err=%v", err)
+	objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas, err = loadRFC4523(rfc4523Path, verbose, objectClassSchemas, attributeTypeSchemas, matchingRuleSchema, ldapSyntaxSchemas)
+	log.Printf("INFO: load RFC 4523: err=%v", err)
 	log.Printf("** Object Class (%d):", len(objectClassSchemas))
 	for _, l := range objectClassSchemas {
 		log.Print(l)
