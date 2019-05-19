@@ -9,7 +9,7 @@ func parseCommandParam() (rfc4512Path, rfc4517Path, rfc4519Path, rfc4523Path, ou
 	flag.StringVar(&rfc4512Path, "rfc4512", "", "path to RFC-4512 text file")
 	flag.StringVar(&rfc4517Path, "rfc4517", "", "path to RFC-4517 text file")
 	flag.StringVar(&rfc4519Path, "rfc4519", "", "path to RFC-4519 text file")
-	flag.StringVar(&rfc4519Path, "rfc4523", "", "path to RFC-4523 text file")
+	flag.StringVar(&rfc4523Path, "rfc4523", "", "path to RFC-4523 text file")
 	flag.StringVar(&outputPath, "out", "", "path to write into")
 	flag.BoolVar(&verbose, "verbose", false, "enable verbose mode")
 	flag.Parse()
