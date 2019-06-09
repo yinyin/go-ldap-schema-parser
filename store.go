@@ -2,6 +2,7 @@ package ldapschemaparser
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"io"
 	"log"
@@ -483,6 +484,55 @@ func (store *LDAPSchemaStore) WriteToFile(name string) (err error) {
 		return
 	}
 	return nil
+}
+
+// WriteToJSONFile write content of store into given path in JSON form.
+func (store *LDAPSchemaStore) WriteToJSONFile(name string) (err error) {
+	var aux struct {
+		LDAPSyntax       []string `json:"ldap_syntax,omitempty"`
+		MatchingRule     []string `json:"matching_rule,omitempty"`
+		MatchingRuleUse  []string `json:"matching_rule_use,omitempty"`
+		AttributeType    []string `json:"attribute_type,omitempty"`
+		ObjectClass      []string `json:"object_class,omitempty"`
+		DITContentRule   []string `json:"dit_content_rule,omitempty"`
+		DITStructureRule []string `json:"dit_structure_rule,omitempty"`
+		NameForm         []string `json:"name_form,omitempty"`
+	}
+	if aux.LDAPSyntax, err = store.collectLDAPSyntaxSchemaTexts(true); nil != err {
+		return
+	}
+	if aux.MatchingRule, err = store.collectMatchingRuleSchemaTexts(true); nil != err {
+		return
+	}
+	if aux.MatchingRuleUse, err = store.collectMatchingRuleUseSchemaTexts(true); nil != err {
+		return
+	}
+	if aux.AttributeType, err = store.collectAttributeTypeSchemaTexts(true); nil != err {
+		return
+	}
+	if aux.ObjectClass, err = store.collectObjectClassSchemaTexts(true); nil != err {
+		return
+	}
+	if aux.DITContentRule, err = store.collectDITContentRuleSchemaTexts(true); nil != err {
+		return
+	}
+	if aux.DITStructureRule, err = store.collectDITStructureRuleSchemaTexts(true); nil != err {
+		return
+	}
+	if aux.NameForm, err = store.collectNameFormSchemaTexts(true); nil != err {
+		return
+	}
+	buf, err := json.Marshal(&aux)
+	if nil != err {
+		return
+	}
+	fp, err := os.Create(name)
+	if nil != err {
+		return
+	}
+	defer fp.Close()
+	_, err = fp.Write(buf)
+	return err
 }
 
 func (store *LDAPSchemaStore) readLine(ln string) (err error) {
