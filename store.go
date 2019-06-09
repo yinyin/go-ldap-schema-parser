@@ -249,132 +249,206 @@ func (store *LDAPSchemaStore) AddNameFormSchemaText(schemaText string) (err erro
 	return nil
 }
 
-func (store *LDAPSchemaStore) writeLDAPSyntaxSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeFieldSeparatedSchemaTexts(fp *os.File, recordType string, schemaTexts []string) (err error) {
+	for _, text := range schemaTexts {
+		line := recordType + lineFieldSeparator + text + "\n"
+		if _, err = fp.WriteString(line); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) collectLDAPSyntaxSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.ldapSyntaxSchemaIndex) {
 		genericSchema := store.ldapSyntaxSchemaIndex[oid]
 		ldapSyntaxSchema, err := NewLDAPSyntaxSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create LDAP syntax schema object from generic schema [%v]: %v", oid, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeLDAPSyntaxSchema + lineFieldSeparator + ldapSyntaxSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, ldapSyntaxSchema.String())
 	}
-	return nil
+	return result, nil
 }
 
-func (store *LDAPSchemaStore) writeMatchingRuleSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeLDAPSyntaxSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectLDAPSyntaxSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeLDAPSyntaxSchema, schemaTexts)
+}
+
+func (store *LDAPSchemaStore) collectMatchingRuleSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.matchingRuleSchemaIndex) {
 		genericSchema := store.matchingRuleSchemaIndex[oid]
 		matchingRuleSchema, err := NewMatchingRuleSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create matching rule schema object from generic schema [%v]: %v", oid, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeMatchingRuleSchema + lineFieldSeparator + matchingRuleSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, matchingRuleSchema.String())
 	}
-	return nil
+	return result, nil
 }
 
-func (store *LDAPSchemaStore) writeMatchingRuleUseSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeMatchingRuleSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectMatchingRuleSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeMatchingRuleSchema, schemaTexts)
+}
+
+func (store *LDAPSchemaStore) collectMatchingRuleUseSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.matchingRuleUseSchemaIndex) {
 		genericSchema := store.matchingRuleSchemaIndex[oid]
 		matchingRuleUseSchema, err := NewMatchingRuleUseSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create matching rule use schema object from generic schema [%v]: %v", oid, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeMatchingRuleUseSchema + lineFieldSeparator + matchingRuleUseSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, matchingRuleUseSchema.String())
 	}
-	return nil
+	return result, nil
 }
 
-func (store *LDAPSchemaStore) writeAttributeTypeSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeMatchingRuleUseSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectMatchingRuleUseSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeMatchingRuleUseSchema, schemaTexts)
+}
+
+func (store *LDAPSchemaStore) collectAttributeTypeSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.attributeTypeSchemaIndex) {
 		genericSchema := store.attributeTypeSchemaIndex[oid]
 		attributeTypeSchema, err := NewAttributeTypeSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create attribute type schema object from generic schema [%v]: %v", oid, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeAttributeTypeSchema + lineFieldSeparator + attributeTypeSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, attributeTypeSchema.String())
 	}
-	return nil
+	return result, nil
 }
 
-func (store *LDAPSchemaStore) writeObjectClassSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeAttributeTypeSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectAttributeTypeSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeAttributeTypeSchema, schemaTexts)
+}
+
+func (store *LDAPSchemaStore) collectObjectClassSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.objectClassSchemaIndex) {
 		genericSchema := store.objectClassSchemaIndex[oid]
 		objectClassSchema, err := NewObjectClassSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create object class schema object from generic schema [%v]: %v", oid, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeObjectClassSchema + lineFieldSeparator + objectClassSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, objectClassSchema.String())
 	}
-	return nil
+	return result, nil
 }
 
-func (store *LDAPSchemaStore) writeDITContentRuleSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeObjectClassSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectObjectClassSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeObjectClassSchema, schemaTexts)
+}
+
+func (store *LDAPSchemaStore) collectDITContentRuleSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.ditContentRuleSchemaIndex) {
 		genericSchema := store.objectClassSchemaIndex[oid]
 		ditContentRuleSchema, err := NewDITContentRuleSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create DIT content rule schema object from generic schema [%v]: %v", oid, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeDITContentRuleSchema + lineFieldSeparator + ditContentRuleSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, ditContentRuleSchema.String())
 	}
-	return nil
+	return result, nil
 }
 
-func (store *LDAPSchemaStore) writeDITStructureRuleSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeDITContentRuleSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectDITContentRuleSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeDITContentRuleSchema, schemaTexts)
+}
+
+func (store *LDAPSchemaStore) collectDITStructureRuleSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, ruleID := range sortedMapKey(store.ditStructureRuleSchemaIndex) {
 		genericSchema := store.objectClassSchemaIndex[ruleID]
 		ditStructureRuleSchema, err := NewDITStructureRuleSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create DIT structure rule schema object from generic schema [%v]: %v", ruleID, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeDITStructureRuleSchema + lineFieldSeparator + ditStructureRuleSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, ditStructureRuleSchema.String())
 	}
-	return nil
+	return result, nil
 }
 
-func (store *LDAPSchemaStore) writeNameFormSchema(fp *os.File) (err error) {
+func (store *LDAPSchemaStore) writeDITStructureRuleSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectDITStructureRuleSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeDITStructureRuleSchema, schemaTexts)
+}
+
+func (store *LDAPSchemaStore) collectNameFormSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.nameFormSchemaIndex) {
 		genericSchema := store.nameFormSchemaIndex[oid]
 		nameFormSchema, err := NewNameFormSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create name form schema object from generic schema [%v]: %v", oid, err)
+			if stopOnError {
+				return nil, err
+			}
 			continue
 		}
-		line := recordTypeNameFormSchema + lineFieldSeparator + nameFormSchema.String() + "\n"
-		if _, err = fp.WriteString(line); nil != err {
-			return err
-		}
+		result = append(result, nameFormSchema.String())
 	}
-	return nil
+	return result, nil
+}
+
+func (store *LDAPSchemaStore) writeNameFormSchema(fp *os.File) (err error) {
+	schemaTexts, err := store.collectNameFormSchemaTexts(false)
+	if nil != err {
+		return
+	}
+	return store.writeFieldSeparatedSchemaTexts(fp, recordTypeNameFormSchema, schemaTexts)
 }
 
 // WriteToFile write content of store into file at given path
