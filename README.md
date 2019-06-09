@@ -11,7 +11,7 @@ go build github.com/yinyin/go-ldap-schema-parser/cmd/rfc-ldap-schema-extract
 # Import Schema Elements
 
 ```sh
-./rfc-ldap-schema-extract -out /tmp/ldap-schema-element.json \
+./rfc-ldap-schema-extract -out /tmp/ldap-schema-elements.txt \
     -rfc4512 docs/spec/rfc4512.txt \
     -rfc4517 docs/spec/rfc4517.txt \
     -rfc4519 docs/spec/rfc4519.txt \
@@ -19,7 +19,7 @@ go build github.com/yinyin/go-ldap-schema-parser/cmd/rfc-ldap-schema-extract
 ```
 
 ```sh
-./ldif-subschema-extract -out /tmp/ldap-schema-element.json \
+./ldif-subschema-extract -out /tmp/ldap-schema-elements.txt \
     docs/schema/core.ldif \
     docs/schema/cosine.ldif \
     docs/schema/inetorgperson.ldif \
