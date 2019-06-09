@@ -163,12 +163,7 @@ func (store *LDAPSchemaStore) AddAttributeTypeSchemaText(schemaText string) (err
 	return nil
 }
 
-// AddObjectClassSchemaText add object class schema in text form
-func (store *LDAPSchemaStore) AddObjectClassSchemaText(schemaText string) (err error) {
-	genericSchema, err := Parse(schemaText)
-	if nil != err {
-		return
-	}
+func (store *LDAPSchemaStore) addObjectClassGenericSchema(genericSchema *GenericSchema) (err error) {
 	objectClassSchema, err := NewObjectClassSchemaViaGenericSchema(genericSchema)
 	if nil != err {
 		return
@@ -191,6 +186,15 @@ func (store *LDAPSchemaStore) AddObjectClassSchemaText(schemaText string) (err e
 		store.objectClassNameIndex[lowercaseName] = genericSchema
 	}
 	return nil
+}
+
+// AddObjectClassSchemaText add object class schema in text form
+func (store *LDAPSchemaStore) AddObjectClassSchemaText(schemaText string) (err error) {
+	genericSchema, err := Parse(schemaText)
+	if nil != err {
+		return
+	}
+	return store.addObjectClassGenericSchema(genericSchema)
 }
 
 // AddDITContentRuleSchemaText add DIT content rule schema in text form
@@ -593,6 +597,36 @@ func (store *LDAPSchemaStore) ReadFromFile(name string) (err error) {
 			log.Printf("ERROR: failed on parsing schema text from file (file=%v, line=%d, err=%v)", name, num, errParse)
 			return errParse
 		}
+	}
+	return nil
+}
+
+// PullDependentSchema pull schemas used by contained schemas from source store into this store.
+func (store *LDAPSchemaStore) PullDependentSchema(source *LDAPSchemaStore, verbose bool) (err error) {
+	for _, oid := range sortedMapKey(store.objectClassSchemaIndex) {
+		genericSchema := store.objectClassSchemaIndex[oid]
+		objectClassSchema, err := NewObjectClassSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create object class schema object from generic schema for pull dependent schema [%v]: %v", oid, err)
+			return err
+		}
+		for _, superClassName := range objectClassSchema.SuperClasses {
+			if _, ok := store.objectClassNameIndex[superClassName]; ok {
+				if verbose {
+					log.Printf("INFO: reach super class for %v via name: %v", objectClassSchema, superClassName)
+				}
+				continue
+			}
+			if remoteGenericSchema, ok := source.objectClassNameIndex[superClassName]; ok {
+				if err = store.addObjectClassGenericSchema(remoteGenericSchema); nil != err {
+					log.Printf("ERROR: failed on adding dependent object class schema %v from source: %v", superClassName, err)
+					return err
+				} else if verbose {
+					log.Printf("INFO: reach super class for %v via name at remote store: %v", objectClassSchema, superClassName)
+				}
+			}
+		}
+		// TODO: pull attribute types
 	}
 	return nil
 }
