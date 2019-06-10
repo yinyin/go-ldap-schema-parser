@@ -649,8 +649,7 @@ func (store *LDAPSchemaStore) pullAttributeTypeWhenNotExist(source *LDAPSchemaSt
 	return errors.New("needed attribute type for " + dependentRefName + " not found: " + attributeTypeName)
 }
 
-// PullDependentSchema pull schemas used by contained schemas from source store into this store.
-func (store *LDAPSchemaStore) PullDependentSchema(source *LDAPSchemaStore, verbose bool) (err error) {
+func (store *LDAPSchemaStore) pullObjectClassesDependencies(source *LDAPSchemaStore, verbose bool) (err error) {
 	for _, oid := range sortedMapKey(store.objectClassSchemaIndex) {
 		genericSchema := store.objectClassSchemaIndex[oid]
 		objectClassSchema, err := NewObjectClassSchemaViaGenericSchema(genericSchema)
@@ -673,6 +672,15 @@ func (store *LDAPSchemaStore) PullDependentSchema(source *LDAPSchemaStore, verbo
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+// PullDependentSchema pull schemas used by contained schemas from source store into this store.
+func (store *LDAPSchemaStore) PullDependentSchema(source *LDAPSchemaStore, verbose bool) (err error) {
+	if err = store.pullObjectClassesDependencies(source, verbose); nil != err {
+		log.Printf("ERROR: failed on pull dependecies for object classes: %v", err)
+		return
 	}
 	return nil
 }
