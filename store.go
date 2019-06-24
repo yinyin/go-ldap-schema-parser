@@ -65,12 +65,7 @@ func NewLDAPSchemaStore() (store *LDAPSchemaStore) {
 	}
 }
 
-// AddLDAPSyntaxSchemaText add LDAP syntax schema in text form
-func (store *LDAPSchemaStore) AddLDAPSyntaxSchemaText(schemaText string) (err error) {
-	genericSchema, err := Parse(schemaText)
-	if nil != err {
-		return
-	}
+func (store *LDAPSchemaStore) addLDAPSyntaxGenericSchema(genericSchema *GenericSchema) (err error) {
 	ldapSyntaxSchema, err := NewLDAPSyntaxSchemaViaGenericSchema(genericSchema)
 	if nil != err {
 		return
@@ -84,12 +79,16 @@ func (store *LDAPSchemaStore) AddLDAPSyntaxSchemaText(schemaText string) (err er
 	return nil
 }
 
-// AddMatchingRuleSchemaText add matching rule schema in text form
-func (store *LDAPSchemaStore) AddMatchingRuleSchemaText(schemaText string) (err error) {
+// AddLDAPSyntaxSchemaText add LDAP syntax schema in text form
+func (store *LDAPSchemaStore) AddLDAPSyntaxSchemaText(schemaText string) (err error) {
 	genericSchema, err := Parse(schemaText)
 	if nil != err {
 		return
 	}
+	return store.addLDAPSyntaxGenericSchema(genericSchema)
+}
+
+func (store *LDAPSchemaStore) addMatchingRuleGenericSchema(genericSchema *GenericSchema) (err error) {
 	matchingRuleSchema, err := NewMatchingRuleSchemaViaGenericSchema(genericSchema)
 	if nil != err {
 		return
@@ -112,6 +111,15 @@ func (store *LDAPSchemaStore) AddMatchingRuleSchemaText(schemaText string) (err 
 		store.matchingRuleNameIndex[lowercaseName] = genericSchema
 	}
 	return nil
+}
+
+// AddMatchingRuleSchemaText add matching rule schema in text form
+func (store *LDAPSchemaStore) AddMatchingRuleSchemaText(schemaText string) (err error) {
+	genericSchema, err := Parse(schemaText)
+	if nil != err {
+		return
+	}
+	return store.addMatchingRuleGenericSchema(genericSchema)
 }
 
 // AddMatchingRuleUseSchemaText add matching rule use schema in text form
@@ -628,13 +636,14 @@ func (store *LDAPSchemaStore) pullObjectClassWhenNotExist(source *LDAPSchemaStor
 }
 
 func (store *LDAPSchemaStore) pullAttributeTypeWhenNotExist(source *LDAPSchemaStore, verbose bool, dependentRefName string, attributeTypeName string) (err error) {
-	if _, ok := store.attributeTypeNameIndex[attributeTypeName]; ok {
+	lowercaseAttributeTypeName := strings.ToLower(attributeTypeName)
+	if _, ok := store.attributeTypeNameIndex[lowercaseAttributeTypeName]; ok {
 		if verbose {
 			log.Printf("INFO: reach attribute type for %s via name: %s", dependentRefName, attributeTypeName)
 		}
 		return nil
 	}
-	if remoteGenericSchema, ok := source.attributeTypeNameIndex[attributeTypeName]; ok {
+	if remoteGenericSchema, ok := source.attributeTypeNameIndex[lowercaseAttributeTypeName]; ok {
 		if err = store.addAttributeTypeGenericSchema(remoteGenericSchema); nil != err {
 			log.Printf("ERROR: failed on adding dependent attribute type schema %s for %s from source: %v", attributeTypeName, dependentRefName, err)
 			return err
@@ -647,6 +656,51 @@ func (store *LDAPSchemaStore) pullAttributeTypeWhenNotExist(source *LDAPSchemaSt
 		log.Printf("ERROR: failed on reach attribute type for %s: %v", dependentRefName, attributeTypeName)
 	}
 	return errors.New("needed attribute type for " + dependentRefName + " not found: " + attributeTypeName)
+}
+
+func (store *LDAPSchemaStore) pullMatchingRuleWhenNotExist(source *LDAPSchemaStore, verbose bool, dependentRefName string, matchingRuleName string) (err error) {
+	lowercaseMatchingRuleName := strings.ToLower(matchingRuleName)
+	if _, ok := store.matchingRuleNameIndex[lowercaseMatchingRuleName]; ok {
+		if verbose {
+			log.Printf("INFO: reach matching rule for %s via name: %s", dependentRefName, matchingRuleName)
+		}
+		return nil
+	}
+	if remoteGenericSchema, ok := source.matchingRuleNameIndex[lowercaseMatchingRuleName]; ok {
+		if err = store.addMatchingRuleGenericSchema(remoteGenericSchema); nil != err {
+			log.Printf("ERROR: failed on adding dependent matching rule schema %s for %s from source: %v", matchingRuleName, dependentRefName, err)
+			return err
+		} else if verbose {
+			log.Printf("INFO: reach matching rule for %s via name at remote store: %s", dependentRefName, matchingRuleName)
+		}
+		return nil
+	}
+	if verbose {
+		log.Printf("ERROR: failed on reach matching rule for %s: %v", dependentRefName, matchingRuleName)
+	}
+	return errors.New("needed matching rule for " + dependentRefName + " not found: " + matchingRuleName)
+}
+
+func (store *LDAPSchemaStore) pullLDAPSyntaxWhenNotExist(source *LDAPSchemaStore, verbose bool, dependentRefName string, ldapSyntaxOID string) (err error) {
+	if _, ok := store.ldapSyntaxSchemaIndex[ldapSyntaxOID]; ok {
+		if verbose {
+			log.Printf("INFO: reach LDAP syntax for %s via name: %s", dependentRefName, ldapSyntaxOID)
+		}
+		return nil
+	}
+	if remoteGenericSchema, ok := source.ldapSyntaxSchemaIndex[ldapSyntaxOID]; ok {
+		if err = store.addLDAPSyntaxGenericSchema(remoteGenericSchema); nil != err {
+			log.Printf("ERROR: failed on adding dependent LDAP syntax schema %s for %s from source: %v", ldapSyntaxOID, dependentRefName, err)
+			return err
+		} else if verbose {
+			log.Printf("INFO: reach LDAP syntax for %s via name at remote store: %s", dependentRefName, ldapSyntaxOID)
+		}
+		return nil
+	}
+	if verbose {
+		log.Printf("ERROR: failed on reach LDAP syntax for %s: %v", dependentRefName, ldapSyntaxOID)
+	}
+	return errors.New("needed LDAP syntax for " + dependentRefName + " not found: " + ldapSyntaxOID)
 }
 
 func (store *LDAPSchemaStore) pullObjectClassesDependencies(source *LDAPSchemaStore, verbose bool) (err error) {
@@ -676,10 +730,81 @@ func (store *LDAPSchemaStore) pullObjectClassesDependencies(source *LDAPSchemaSt
 	return nil
 }
 
+func (store *LDAPSchemaStore) pullAttributeTypesDependencies(source *LDAPSchemaStore, verbose bool) (err error) {
+	previousCount := 0
+	passCount := 1
+	for len(store.attributeTypeSchemaIndex) != previousCount {
+		previousCount = len(store.attributeTypeSchemaIndex)
+		for _, oid := range sortedMapKey(store.attributeTypeSchemaIndex) {
+			genericSchema := store.attributeTypeSchemaIndex[oid]
+			attributeTypeSchema, err := NewAttributeTypeSchemaViaGenericSchema(genericSchema)
+			if nil != err {
+				log.Printf("ERROR: cannot create attribute type schema object from generic schema for pull dependent schema [%v]: %v", oid, err)
+				return err
+			}
+			if "" != attributeTypeSchema.SuperType {
+				if err = store.pullAttributeTypeWhenNotExist(source, verbose, attributeTypeSchema.NumericOID, attributeTypeSchema.SuperType); nil != err {
+					return err
+				}
+			}
+			if "" != attributeTypeSchema.Equality {
+				if err = store.pullMatchingRuleWhenNotExist(source, verbose, attributeTypeSchema.NumericOID, attributeTypeSchema.Equality); nil != err {
+					return err
+				}
+			}
+			if "" != attributeTypeSchema.Ordering {
+				if err = store.pullMatchingRuleWhenNotExist(source, verbose, attributeTypeSchema.NumericOID, attributeTypeSchema.Ordering); nil != err {
+					return err
+				}
+			}
+			if "" != attributeTypeSchema.SubString {
+				if err = store.pullMatchingRuleWhenNotExist(source, verbose, attributeTypeSchema.NumericOID, attributeTypeSchema.SubString); nil != err {
+					return err
+				}
+			}
+			if "" != attributeTypeSchema.SyntaxOID {
+				if err = store.pullLDAPSyntaxWhenNotExist(source, verbose, attributeTypeSchema.NumericOID, attributeTypeSchema.SyntaxOID); nil != err {
+					return err
+				}
+			}
+		}
+		if verbose {
+			log.Printf("INFO: %d pass of pulling attribute type dependencies", passCount)
+		}
+		passCount = passCount + 1
+	}
+	return nil
+}
+
+func (store *LDAPSchemaStore) pullMatchingRulesDependencies(source *LDAPSchemaStore, verbose bool) (err error) {
+	for _, oid := range sortedMapKey(store.matchingRuleSchemaIndex) {
+		genericSchema := store.matchingRuleSchemaIndex[oid]
+		matchingRuleSchema, err := NewMatchingRuleSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create matching rule schema object from generic schema for pull dependent schema [%v]: %v", oid, err)
+			return err
+		}
+		if "" != matchingRuleSchema.Syntax {
+			if err = store.pullLDAPSyntaxWhenNotExist(source, verbose, matchingRuleSchema.NumericOID, matchingRuleSchema.Syntax); nil != err {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // PullDependentSchema pull schemas used by contained schemas from source store into this store.
 func (store *LDAPSchemaStore) PullDependentSchema(source *LDAPSchemaStore, verbose bool) (err error) {
 	if err = store.pullObjectClassesDependencies(source, verbose); nil != err {
 		log.Printf("ERROR: failed on pull dependecies for object classes: %v", err)
+		return
+	}
+	if err = store.pullAttributeTypesDependencies(source, verbose); nil != err {
+		log.Printf("ERROR: failed on pull dependecies for attribute types: %v", err)
+		return
+	}
+	if err = store.pullMatchingRulesDependencies(source, verbose); nil != err {
+		log.Printf("ERROR: failed on pull dependecies for matching rules: %v", err)
 		return
 	}
 	return nil
