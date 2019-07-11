@@ -1,6 +1,6 @@
 package ldapschemaparser
 
-// DITStructureRuleSchema represent schema of DIT content rule
+// DITStructureRuleSchema represent schema of DIT structure rule
 type DITStructureRuleSchema struct {
 	RuleID      string
 	Name        []string
