@@ -122,12 +122,7 @@ func (store *LDAPSchemaStore) AddMatchingRuleSchemaText(schemaText string) (err 
 	return store.addMatchingRuleGenericSchema(genericSchema)
 }
 
-// AddMatchingRuleUseSchemaText add matching rule use schema in text form
-func (store *LDAPSchemaStore) AddMatchingRuleUseSchemaText(schemaText string) (err error) {
-	genericSchema, err := Parse(schemaText)
-	if nil != err {
-		return
-	}
+func (store *LDAPSchemaStore) addMatchingRuleUseGenericSchema(genericSchema *GenericSchema) (err error) {
 	matchingRuleUseSchema, err := NewMatchingRuleUseSchemaViaGenericSchema(genericSchema)
 	if nil != err {
 		return
@@ -139,6 +134,15 @@ func (store *LDAPSchemaStore) AddMatchingRuleUseSchemaText(schemaText string) (e
 		store.matchingRuleUseSchemaIndex[matchingRuleUseSchema.NumericOID] = genericSchema
 	}
 	return nil
+}
+
+// AddMatchingRuleUseSchemaText add matching rule use schema in text form
+func (store *LDAPSchemaStore) AddMatchingRuleUseSchemaText(schemaText string) (err error) {
+	genericSchema, err := Parse(schemaText)
+	if nil != err {
+		return
+	}
+	return store.addMatchingRuleUseGenericSchema(genericSchema)
 }
 
 func (store *LDAPSchemaStore) addAttributeTypeGenericSchema(genericSchema *GenericSchema) (err error) {
@@ -264,6 +268,19 @@ func (store *LDAPSchemaStore) AddNameFormSchemaText(schemaText string) (err erro
 		store.nameFormSchemaIndex[nameFormSchema.NumericOID] = genericSchema
 	}
 	return nil
+}
+
+func (store *LDAPSchemaStore) makeOIDOrderedAttributeTypeSchemas() (result []*AttributeTypeSchema, err error) {
+	for _, oid := range sortedMapKey(store.attributeTypeSchemaIndex) {
+		genericSchema := store.attributeTypeSchemaIndex[oid]
+		attributeTypeSchema, err := NewAttributeTypeSchemaViaGenericSchema(genericSchema)
+		if nil != err {
+			log.Printf("ERROR: cannot create attribute type schema object from generic schema for pull dependent schema [%v]: %v", oid, err)
+			return nil, err
+		}
+		result = append(result, attributeTypeSchema)
+	}
+	return
 }
 
 func (store *LDAPSchemaStore) writeFieldSeparatedSchemaTexts(fp *os.File, recordType string, schemaTexts []string) (err error) {
@@ -613,6 +630,44 @@ func (store *LDAPSchemaStore) ReadFromFile(name string) (err error) {
 	return nil
 }
 
+func (store *LDAPSchemaStore) rebuildMatchingRuleUses(verbose bool) (err error) {
+	attributeTypeSchemas, err := store.makeOIDOrderedAttributeTypeSchemas()
+	if nil != err {
+		return err
+	}
+	store.matchingRuleUseSchemaIndex = make(map[string]*GenericSchema)
+	for _, matchingRuleGenericSchema := range store.matchingRuleSchemaIndex {
+		matchingRuleSchema, err := NewMatchingRuleSchemaViaGenericSchema(matchingRuleGenericSchema)
+		if nil != err {
+			log.Printf("ERROR: failed on parsing matching rule schema from generic schema %#v: %v", matchingRuleGenericSchema, err)
+			return err
+		}
+		var appliesTo []string
+		for _, attributeTypeSchema := range attributeTypeSchemas {
+			if attributeTypeSchema.UsingMatchingRule(matchingRuleSchema) {
+				appliesTo = append(appliesTo, attributeTypeSchema.ShortIdentifier())
+			}
+		}
+		if len(appliesTo) == 0 {
+			if verbose {
+				log.Printf("INFO: skip matching rule use due to empty applies-to: %v", matchingRuleSchema)
+			}
+			continue
+		}
+		aux := MatchingRuleUseSchema{
+			NumericOID:  matchingRuleSchema.NumericOID,
+			Name:        matchingRuleSchema.Name,
+			Description: matchingRuleSchema.Description,
+			Obsolete:    matchingRuleSchema.Obsolete,
+			AppliesTo:   appliesTo,
+		}
+		if err = store.addMatchingRuleUseGenericSchema(aux.GenericSchema()); nil != err {
+			return err
+		}
+	}
+	return nil
+}
+
 func (store *LDAPSchemaStore) pullObjectClassWhenNotExist(source *LDAPSchemaStore, verbose bool, dependentRefName string, objectClassName string) (err error) {
 	if _, ok := store.objectClassNameIndex[objectClassName]; ok {
 		if verbose {
@@ -735,13 +790,11 @@ func (store *LDAPSchemaStore) pullAttributeTypesDependencies(source *LDAPSchemaS
 	passCount := 1
 	for len(store.attributeTypeSchemaIndex) != previousCount {
 		previousCount = len(store.attributeTypeSchemaIndex)
-		for _, oid := range sortedMapKey(store.attributeTypeSchemaIndex) {
-			genericSchema := store.attributeTypeSchemaIndex[oid]
-			attributeTypeSchema, err := NewAttributeTypeSchemaViaGenericSchema(genericSchema)
-			if nil != err {
-				log.Printf("ERROR: cannot create attribute type schema object from generic schema for pull dependent schema [%v]: %v", oid, err)
-				return err
-			}
+		attributeTypeSchemas, err := store.makeOIDOrderedAttributeTypeSchemas()
+		if nil != err {
+			return err
+		}
+		for _, attributeTypeSchema := range attributeTypeSchemas {
 			if "" != attributeTypeSchema.SuperType {
 				if err = store.pullAttributeTypeWhenNotExist(source, verbose, attributeTypeSchema.NumericOID, attributeTypeSchema.SuperType); nil != err {
 					return err
@@ -805,6 +858,10 @@ func (store *LDAPSchemaStore) PullDependentSchema(source *LDAPSchemaStore, verbo
 	}
 	if err = store.pullMatchingRulesDependencies(source, verbose); nil != err {
 		log.Printf("ERROR: failed on pull dependecies for matching rules: %v", err)
+		return
+	}
+	if err = store.rebuildMatchingRuleUses(verbose); nil != err {
+		log.Printf("ERROR: failed on rebuild matching rules use: %v", err)
 		return
 	}
 	return nil
