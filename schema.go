@@ -50,6 +50,16 @@ func newParameterizedKeywordWithParameter(paramText string, sourceRule SourceRul
 	return
 }
 
+func newParameterizedKeywordWithParameters(paramTexts []string, sourceRule SourceRuleType) (paramKeyword *ParameterizedKeyword) {
+	paramKeyword = &ParameterizedKeyword{
+		SourceRule: sourceRule,
+	}
+	for _, paramText := range paramTexts {
+		paramKeyword.addParameter(paramText)
+	}
+	return
+}
+
 func (paramKeyword *ParameterizedKeyword) addParameter(paramText string) {
 	paramKeyword.Parameters = undupAppend(paramKeyword.Parameters, paramText)
 }
