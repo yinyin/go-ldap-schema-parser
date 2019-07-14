@@ -62,6 +62,28 @@ func NewAttributeTypeSchemaViaGenericSchema(generic *GenericSchema) (result *Att
 	}, nil
 }
 
+// ShortIdentifier return first short name or numeric OID if no short name available.
+func (s *AttributeTypeSchema) ShortIdentifier() string {
+	if len(s.Name) > 0 {
+		return s.Name[0]
+	}
+	return s.NumericOID
+}
+
+// UsingMatchingRule check if uses given matching rule.
+func (s *AttributeTypeSchema) UsingMatchingRule(matchingRuleSchema *MatchingRuleSchema) bool {
+	if ("" != s.Equality) && matchingRuleSchema.HasIdentifier(s.Equality) {
+		return true
+	}
+	if ("" != s.Ordering) && matchingRuleSchema.HasIdentifier(s.Ordering) {
+		return true
+	}
+	if ("" != s.SubString) && matchingRuleSchema.HasIdentifier(s.SubString) {
+		return true
+	}
+	return false
+}
+
 func (s *AttributeTypeSchema) String() string {
 	b := SchemaTextBuilder{}
 	b.AppendFragment(s.NumericOID)
