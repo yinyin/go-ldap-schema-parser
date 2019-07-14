@@ -33,6 +33,19 @@ func NewMatchingRuleSchemaViaGenericSchema(generic *GenericSchema) (result *Matc
 	}, nil
 }
 
+// HasIdentifier check this rule has given identity.
+func (s *MatchingRuleSchema) HasIdentifier(identifyText string) bool {
+	for _, name := range s.Name {
+		if name == identifyText {
+			return true
+		}
+	}
+	if s.NumericOID == identifyText {
+		return true
+	}
+	return false
+}
+
 func (s *MatchingRuleSchema) String() string {
 	b := SchemaTextBuilder{}
 	b.AppendFragment(s.NumericOID)
