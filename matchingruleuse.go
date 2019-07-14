@@ -33,6 +33,26 @@ func NewMatchingRuleUseSchemaViaGenericSchema(generic *GenericSchema) (result *M
 	}, nil
 }
 
+// GenericSchema create an instance of generic schema from this instance of matching-rule-use schema.
+func (s *MatchingRuleUseSchema) GenericSchema() (generic *GenericSchema) {
+	generic = newGenericSchema()
+	generic.NumericOID = s.NumericOID
+	if len(s.Name) > 0 {
+		nameParams := newParameterizedKeywordWithParameters(s.Name, QuotedStringsRule)
+		generic.addParameterizedKeyword("NAME", nameParams)
+	}
+	if "" != s.Description {
+		descriptionParam := newParameterizedKeywordWithParameter(s.Description, QuotedStringRule)
+		generic.addParameterizedKeyword("DESC", descriptionParam)
+	}
+	if s.Obsolete {
+		generic.addFlagKeywords("OBSOLETE")
+	}
+	appliesToParams := newParameterizedKeywordWithParameters(s.AppliesTo, QuotedStringsRule)
+	generic.addParameterizedKeyword("APPLIES", appliesToParams)
+	return
+}
+
 func (s *MatchingRuleUseSchema) String() string {
 	b := SchemaTextBuilder{}
 	b.AppendFragment(s.NumericOID)
