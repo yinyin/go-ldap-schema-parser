@@ -42,3 +42,4 @@ y.output
 /rfc-ldap-schema-extract
 /ldif-subschema-extract
 /keyword-type-lookup-table-gen
+/pull-ldap-schema
