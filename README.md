@@ -6,6 +6,7 @@ The following command build utilities:
 go build github.com/yinyin/go-ldap-schema-parser/cmd/ldap-schema-parser
 go build github.com/yinyin/go-ldap-schema-parser/cmd/ldif-subschema-extract
 go build github.com/yinyin/go-ldap-schema-parser/cmd/rfc-ldap-schema-extract
+go build github.com/yinyin/go-ldap-schema-parser/cmd/pull-ldap-schema
 ```
 
 # Import Schema Elements
@@ -23,5 +24,15 @@ go build github.com/yinyin/go-ldap-schema-parser/cmd/rfc-ldap-schema-extract
     docs/schema/core.ldif \
     docs/schema/cosine.ldif \
     docs/schema/inetorgperson.ldif \
-    docs/schema/nis.ldif
+    docs/schema/nis.ldif \
+    docs/supplement-schema/posix.ldif
+```
+
+# Pull Dependent Schema Elements
+
+```sh
+./pull-ldap-schema -verbose \
+    -element /tmp/ldap-schema-elements.txt \
+    -out /tmp/ldap-output.json \
+    -root /tmp/ldap-schema-root.txt
 ```
