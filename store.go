@@ -343,7 +343,7 @@ func (store *LDAPSchemaStore) writeMatchingRuleSchema(fp *os.File) (err error) {
 
 func (store *LDAPSchemaStore) collectMatchingRuleUseSchemaTexts(stopOnError bool) (result []string, err error) {
 	for _, oid := range sortedMapKey(store.matchingRuleUseSchemaIndex) {
-		genericSchema := store.matchingRuleSchemaIndex[oid]
+		genericSchema := store.matchingRuleUseSchemaIndex[oid]
 		matchingRuleUseSchema, err := NewMatchingRuleUseSchemaViaGenericSchema(genericSchema)
 		if nil != err {
 			log.Printf("ERROR: cannot create matching rule use schema object from generic schema [%v]: %v", oid, err)
