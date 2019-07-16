@@ -1,0 +1,13 @@
+dn: cn=nis,cn=schema,cn=config
+objectClass: olcSchemaConfig
+cn: nis
+attributeTypes: ( 1.3.6.1.1.1.1.0 NAME 'uidNumber'
+  DESC 'An integer uniquely identifying a user in an administrative domain'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+attributeTypes: ( 1.3.6.1.1.1.1.1 NAME 'gidNumber'
+  DESC 'An integer uniquely identifying a group in an administrative domain'
+  EQUALITY integerMatch
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.27 SINGLE-VALUE )
+matchingRules: ( 1.3.6.1.4.1.4203.1.2.1 NAME 'caseExactIA5SubstringsMatch'
+  SYNTAX 1.3.6.1.4.1.1466.115.121.1.26 )
