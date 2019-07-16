@@ -759,28 +759,37 @@ func (store *LDAPSchemaStore) pullLDAPSyntaxWhenNotExist(source *LDAPSchemaStore
 }
 
 func (store *LDAPSchemaStore) pullObjectClassesDependencies(source *LDAPSchemaStore, verbose bool) (err error) {
-	for _, oid := range sortedMapKey(store.objectClassSchemaIndex) {
-		genericSchema := store.objectClassSchemaIndex[oid]
-		objectClassSchema, err := NewObjectClassSchemaViaGenericSchema(genericSchema)
-		if nil != err {
-			log.Printf("ERROR: cannot create object class schema object from generic schema for pull dependent schema [%v]: %v", oid, err)
-			return err
-		}
-		for _, superClassName := range objectClassSchema.SuperClasses {
-			if err = store.pullObjectClassWhenNotExist(source, verbose, objectClassSchema.NumericOID, superClassName); nil != err {
+	previousCount := 0
+	passCount := 1
+	for len(store.objectClassSchemaIndex) != previousCount {
+		previousCount = len(store.objectClassSchemaIndex)
+		for _, oid := range sortedMapKey(store.objectClassSchemaIndex) {
+			genericSchema := store.objectClassSchemaIndex[oid]
+			objectClassSchema, err := NewObjectClassSchemaViaGenericSchema(genericSchema)
+			if nil != err {
+				log.Printf("ERROR: cannot create object class schema object from generic schema for pull dependent schema [%v]: %v", oid, err)
 				return err
 			}
-		}
-		for _, attributeName := range objectClassSchema.Must {
-			if err = store.pullAttributeTypeWhenNotExist(source, verbose, objectClassSchema.NumericOID, attributeName); nil != err {
-				return err
+			for _, superClassName := range objectClassSchema.SuperClasses {
+				if err = store.pullObjectClassWhenNotExist(source, verbose, objectClassSchema.NumericOID, superClassName); nil != err {
+					return err
+				}
+			}
+			for _, attributeName := range objectClassSchema.Must {
+				if err = store.pullAttributeTypeWhenNotExist(source, verbose, objectClassSchema.NumericOID, attributeName); nil != err {
+					return err
+				}
+			}
+			for _, attributeName := range objectClassSchema.May {
+				if err = store.pullAttributeTypeWhenNotExist(source, verbose, objectClassSchema.NumericOID, attributeName); nil != err {
+					return err
+				}
 			}
 		}
-		for _, attributeName := range objectClassSchema.May {
-			if err = store.pullAttributeTypeWhenNotExist(source, verbose, objectClassSchema.NumericOID, attributeName); nil != err {
-				return err
-			}
+		if verbose {
+			log.Printf("INFO: %d pass of pulling object class dependencies", passCount)
 		}
+		passCount++
 	}
 	return nil
 }
@@ -824,7 +833,7 @@ func (store *LDAPSchemaStore) pullAttributeTypesDependencies(source *LDAPSchemaS
 		if verbose {
 			log.Printf("INFO: %d pass of pulling attribute type dependencies", passCount)
 		}
-		passCount = passCount + 1
+		passCount++
 	}
 	return nil
 }
